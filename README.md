@@ -1,9 +1,6 @@
 # D.Vod
 Overwatch VOD and Levelling Bot for Discord in Java
 
-# IDE
-IntelliJ will be used for this project, so the file structure will be the IntelliJ file structure.
-
 ## Raspberry Pi Login Information
 IP Address: 58.172.83.53:5900  
 Username: pi  
