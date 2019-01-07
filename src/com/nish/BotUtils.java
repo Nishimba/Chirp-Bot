@@ -6,10 +6,17 @@ import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
+/*
+ * Created by Nishimba on 06/01/19
+ * Basic Utilities for any class in the Bot to use
+ */
+
 public class BotUtils
 {
+    //Prefix for commands
     static String BOT_PREFIX = "~";
 
+    //Create the client to connect to the server
     static IDiscordClient getBuiltDiscordClient(String token)
     {
         return new ClientBuilder()
@@ -17,6 +24,7 @@ public class BotUtils
                 .build();
     }
 
+    //Send message to a given channel, with some exception catching
     static void SendMessage(IChannel channel, String message)
     {
         RequestBuffer.request(() -> {
