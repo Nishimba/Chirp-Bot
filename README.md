@@ -8,3 +8,6 @@ IntelliJ will be used for this project, so the file structure will be the Intell
 IP Address: 58.172.83.53:5900  
 Username: pi  
 Password: vodbotpi  
+
+##Link to Trello
+https://trello.com/b/fAW5riH6/vod-bot
