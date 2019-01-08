@@ -17,7 +17,7 @@ public class MainRunner
         IDiscordClient cli = BotUtils.getBuiltDiscordClient(GetTokenFromFile("res/BotToken.txt"));
 
         //register it to listen to events in the MyEvents class
-        cli.getDispatcher().registerListener(new MyEvents());
+        cli.getDispatcher().registerListener(new CommandHandler());
 
         //login the client
         cli.login();
