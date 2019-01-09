@@ -20,13 +20,18 @@ public class CommandHandler
     CommandHandler()
     {
         commandMap = new HashMap<>();
-
         InitiateCommands();
     }
 
-    void OutputUsage()
+    String OutputUsage(String CommandNameString)
     {
-        //This needs to basically do what lines 64-73 do in a method to avoid code duplication
+        StringBuilder builtString = new StringBuilder();
+        for (String s: commandMap.get(CommandNameString).getUsage)
+        {
+            builtString.append("\r\n" + s);
+        }
+
+        return builtString.toString();
     }
 
     //when creating a command, put the execution here and add it to the hashmap
@@ -49,8 +54,11 @@ public class CommandHandler
                 //Create an embed
                 EmbedBuilder builder = new EmbedBuilder();
 
+                //Basic blocks of the help embed that won't change depending on input
                 builder.withAuthorName("Chirp Help");
-                builder.withTitle("I'm here to help! This is everything I know.");
+                builder.withTitle("I'll try my best! Here's what I know.");
+
+                //If just "~help" is given, the bot will return all commands it knows in the HashMap.
                 if(args.length == 1)
                 {
                     for (HashMap.Entry<String, Command> command : commandMap.entrySet()) {
@@ -60,20 +68,15 @@ public class CommandHandler
                     //send the embed
                     BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
+                //Otherwise, the bot will return the usage, title and description of the command given in the first argument after the help command itself.
                 else
                 {
-                    //below here needs to be moved into OutputUsage
                     if (commandMap.containsKey(args[1]))
                     {
-                        StringBuilder builtString = new StringBuilder();
                         builder.appendField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
-                        for (String s: commandMap.get(args[1]).getUsage)
-                        {
-                            builtString.append("\r\n" + s);
-                        }
-                        builder.appendField("Example uses of " + (commandMap.get(args[1]).commandName), builtString.toString(), false);
+                        builder.appendField("Example uses of " + (commandMap.get(args[1]).commandName), OutputUsage(args[1]), false);
 
-                        //send the embed
+                        //send the embed once done
                         BotUtils.SendEmbed(event.getChannel(), builder.build());
                     }
                     else
@@ -99,7 +102,7 @@ public class CommandHandler
         commandMap.put(argsCommand.commandName, argsCommand);
     }
 
-    //execute a command when the appropriate command is typed
+    //execute the command when the appropriate command is typed
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event)
     {
@@ -109,9 +112,10 @@ public class CommandHandler
         try
         {
             String[] commandArgs = messageContent.split(" ");
-            for (String s: commandArgs) {
+            //Uncomment this for debugging purposes:
+            /*for (String s: commandArgs) {
                 System.out.println(s);
-            }
+            }*/
             if(messageContent.startsWith(BotUtils.BOT_PREFIX) && commandMap.containsKey(commandArgs[0].substring(1)))
             {
                 Command toExecute = commandMap.get(commandArgs[0].substring(1));
@@ -137,8 +141,9 @@ public class CommandHandler
 
                     builder.withAuthorName("Chirp Help");
 
-                    builder.withTitle("You seemed to have used that command incorrectly! I'm here to help! This is everything I know about the " + toExecute.commandName + " command.");
+                    builder.withTitle("You seemed to have used the " + (toExecute.commandName) + " command incorrectly! I'm here to help - here's everything I know about " + toExecute.commandName + ":");
                     builder.appendField(toExecute.commandName, toExecute.description, false);
+                    builder.appendField("Example uses of " + (toExecute.commandName), OutputUsage(toExecute.commandName), false);
 
                     //OutputUsage needs to be added here also
 
