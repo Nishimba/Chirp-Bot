@@ -26,7 +26,7 @@ public class CommandHandler
 
     void OutputUsage()
     {
-        //This needs to basically do what lines 73-61 do in a method to avoid code duplication
+        //This needs to basically do what lines 64-73 do in a method to avoid code duplication
     }
 
     //when creating a command, put the execution here and add it to the hashmap
@@ -51,28 +51,36 @@ public class CommandHandler
 
                 builder.withAuthorName("Chirp Help");
                 builder.withTitle("I'm here to help! This is everything I know.");
-                System.out.println(args.length);
-                if(args.length == 1) {
-                    for (HashMap.Entry<String, Command> command: commandMap.entrySet())
-                        {
+                if(args.length == 1)
+                {
+                    for (HashMap.Entry<String, Command> command : commandMap.entrySet()) {
                         builder.appendField(command.getValue().commandName, command.getValue().description, false);
                     }
+
+                    //send the embed
+                    BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
-                //below here needs to be moved into OutputUsage
-                else if (commandMap.containsKey(args[1]))
+                else
                 {
-                    StringBuilder buil = new StringBuilder();
-                    builder.appendField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
-                    for (String s: commandMap.get(args[1]).getUsage)
+                    //below here needs to be moved into OutputUsage
+                    if (commandMap.containsKey(args[1]))
                     {
-                        buil.append("\r\n" + s);
+                        StringBuilder builtString = new StringBuilder();
+                        builder.appendField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
+                        for (String s: commandMap.get(args[1]).getUsage)
+                        {
+                            builtString.append("\r\n" + s);
+                        }
+                        builder.appendField("Example uses of " + (commandMap.get(args[1]).commandName), builtString.toString(), false);
+
+                        //send the embed
+                        BotUtils.SendEmbed(event.getChannel(), builder.build());
                     }
-                    builder.appendField("Example uses of " + (commandMap.get(args[1]).commandName), buil.toString(), false);
-
+                    else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry!");
+                    }
                 }
-
-                //send the embed
-                BotUtils.SendEmbed(event.getChannel(), builder.build());
             }
         };
 
