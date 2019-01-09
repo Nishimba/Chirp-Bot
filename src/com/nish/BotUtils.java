@@ -7,6 +7,7 @@ import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +49,26 @@ public class BotUtils
     //IO handling
     //read from any file
     //write to any file
-    public List<String> ReadLines(String filePath)//add a switch for delimiter?
+    //
+    public List<String> ReadLines(String filePath) // todo add a switch for delimiter?
     {
-
-        BufferedReader lineReader = new BufferedReader(new FileReader(filePath));
-        List<String> lines = new ArrayList<String>();
-
-        while((String line = lineReader.readLine()) != null)
+        try
         {
-            lines.add(line);
+            BufferedReader lineReader = new BufferedReader(new FileReader(filePath));
+            List<String> lines = new ArrayList<>();
+            String line = null;
+            do
+            {
+                line = lineReader.readLine();
+                lines.add(line);
+            }
+            while(line != null);
             return lines;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error in ReadLines method.");
+            return null;
         }
     }
     //**************************************
