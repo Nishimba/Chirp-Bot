@@ -28,7 +28,7 @@ public class CommandHandler
 
     void OutputUsage()
     {
-
+        //This needs to basically do what lines 73-61 do in a method to avoid code duplication
     }
 
     //when creating a command, put the execution here and add it to the hashmap
@@ -60,6 +60,7 @@ public class CommandHandler
                         builder.appendField(command.getValue().commandName, command.getValue().description, false);
                     }
                 }
+                //below here needs to be moved into OutputUsage
                 else if (commandMap.containsKey(args[1]))
                 {
                     StringBuilder buil = new StringBuilder();
@@ -133,6 +134,7 @@ public class CommandHandler
                     builder.withTitle("You seemed to have used that command incorrectly! I'm here to help! This is everything I know about the " + toExecute.commandName + " command.");
                     builder.appendField(toExecute.commandName, toExecute.description, false);
 
+                    //OutputUsage needs to be added here also
 
                     BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
