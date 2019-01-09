@@ -37,6 +37,6 @@ abstract class Command
 		takesArgs = args;
     }
 
-    //execution to be filled in when creating a command
-    abstract void Execute(MessageReceivedEvent event);
+    //execution to be filled in when creating a command, returns a boolean when executes properly
+    abstract void Execute(MessageReceivedEvent event, String[] args);
 }
