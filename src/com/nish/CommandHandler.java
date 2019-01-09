@@ -37,38 +37,41 @@ public class CommandHandler
         };
 
         //The help command
-        Command helpCommand = new Command("help", "A help command showing how to use Chirp.", true)
+        Command helpCommand = new Command("help", "A help command showing how to use Chirp.", false)
         {
             void Execute(MessageReceivedEvent event, String[] args)
             {
+                //Create an embed
                 EmbedBuilder builder = new EmbedBuilder();
 
                 builder.withAuthorName("Chirp Help");
 
-                //output help command if help is only command
-                if(args.length == 1)
-                {
-                    builder.withTitle("I'm here to help! This is everything I know.");
+                builder.withTitle("I'm here to help! This is everything I know.\r\nFor help on a particular command, type that command!");
 
-                    for (HashMap.Entry<String, Command> command: commandMap.entrySet())
-                    {
-                        builder.appendField(command.getValue().commandName, command.getValue().description, false);
-                    }
-                }
-                //output specific help if command is specified
-                else if(args.length == 2 && commandMap.containsKey(args[1]))
+                //for each entry add it to the embed
+                for (HashMap.Entry<String, Command> command: commandMap.entrySet())
                 {
-                    builder.withTitle("I'm here to help! This is what I know about that.");
-
-                    builder.appendField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
+                    builder.appendField(command.getValue().commandName, command.getValue().description, false);
                 }
+
+                //send the embed
                 BotUtils.SendEmbed(event.getChannel(), builder.build());
+            }
+        };
+
+        //random args command
+        Command argsCommand = new Command("args", "Argument commands", true)
+        {
+            void Execute(MessageReceivedEvent event, String[] args)
+            {
+                BotUtils.SendMessage(event.getChannel(), "Successful args");
             }
         };
 
         //addition of commands to hashmap
         commandMap.put(testCommand.commandName, testCommand);
         commandMap.put(helpCommand.commandName, helpCommand);
+        commandMap.put(argsCommand.commandName, argsCommand);
     }
 
     //execute a command when the appropriate command is typed
@@ -84,21 +87,27 @@ public class CommandHandler
         {
             Command toExecute = commandMap.get(commandArgs[0]);
 
-            //If the command is provided with invalid arguments, output a help for it
-            if(commandArgs.length == 1 && toExecute.takesArgs || commandArgs.length == 2 && !toExecute.takesArgs)
+            //valid commands should execute
+            if(toExecute.takesArgs && commandArgs.length > 1)
             {
-                //TODO - Provide text with usages for help to use the command
-                BotUtils.SendMessage(event.getChannel(), "This is debug text for incorrectly providing arguments");
+                toExecute.Execute(event, commandArgs);
             }
-
-            //execute if commands are valid
-            if(commandArgs.length == 1 && !toExecute.takesArgs)
+            if(!toExecute.takesArgs && commandArgs.length == 1)
             {
                 toExecute.Execute(event, null);
             }
-            if(commandArgs.length == 2 && toExecute.takesArgs)
+
+            //invalid commands should output help text
+            if((!toExecute.takesArgs && commandArgs.length > 1) || (toExecute.takesArgs  && commandArgs.length == 1))
             {
-                toExecute.Execute(event, commandArgs);
+                EmbedBuilder builder = new EmbedBuilder();
+
+                builder.withAuthorName("Chirp Help");
+
+                builder.withTitle("I'm here to help! This is everything I know about that.");
+                builder.appendField(toExecute.commandName, toExecute.description, false);
+
+                BotUtils.SendEmbed(event.getChannel(), builder.build());
             }
         }
     }

@@ -13,7 +13,7 @@ import sx.blah.discord.util.RequestBuffer;
  * Basic Utilities for any class in the Bot to use
  */
 
-public class BotUtils
+class BotUtils
 {
     //Prefix for commands
     static String BOT_PREFIX = "~";
