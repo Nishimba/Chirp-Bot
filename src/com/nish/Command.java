@@ -26,13 +26,15 @@ abstract class Command
     private String description;
     private String[] getUsage;
     String commandName;
+	boolean takesArgs;
 
     //initiates the command
-    Command(String name, String desc, String[] usage)
+    Command(String name, String desc, String[] usage, args)
     {
         description = desc;
         commandName = name;
         getUsage = usage;
+		takesArgs = args;
     }
 
     //execution to be filled in when creating a command
