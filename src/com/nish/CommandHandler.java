@@ -80,35 +80,42 @@ public class CommandHandler
     {
         //store variables to easily access later
         String messageContent = event.getMessage().getContent();
-        String[] commandArgs = messageContent.substring(1).split(" ");
 
-        //if the command is a command
-        if(messageContent.startsWith(BotUtils.BOT_PREFIX) && commandMap.containsKey(commandArgs[0]))
+        try
         {
-            Command toExecute = commandMap.get(commandArgs[0]);
-
-            //valid commands should execute
-            if(toExecute.takesArgs && commandArgs.length > 1)
+            String[] commandArgs = messageContent.substring(1).split(" ");
+            //if the command is a command
+            if(messageContent.startsWith(BotUtils.BOT_PREFIX) && commandMap.containsKey(commandArgs[0]))
             {
-                toExecute.Execute(event, commandArgs);
+                Command toExecute = commandMap.get(commandArgs[0]);
+
+                //valid commands should execute
+                if(toExecute.takesArgs && commandArgs.length > 1)
+                {
+                    toExecute.Execute(event, commandArgs);
+                }
+                if(!toExecute.takesArgs && commandArgs.length == 1)
+                {
+                    toExecute.Execute(event, null);
+                }
+
+                //invalid commands should output help text
+                if((!toExecute.takesArgs && commandArgs.length > 1) || (toExecute.takesArgs  && commandArgs.length == 1))
+                {
+                    EmbedBuilder builder = new EmbedBuilder();
+
+                    builder.withAuthorName("Chirp Help");
+
+                    builder.withTitle("I'm here to help! This is everything I know about that.");
+                    builder.appendField(toExecute.commandName, toExecute.description, false);
+
+                    BotUtils.SendEmbed(event.getChannel(), builder.build());
+                }
             }
-            if(!toExecute.takesArgs && commandArgs.length == 1)
-            {
-                toExecute.Execute(event, null);
-            }
-
-            //invalid commands should output help text
-            if((!toExecute.takesArgs && commandArgs.length > 1) || (toExecute.takesArgs  && commandArgs.length == 1))
-            {
-                EmbedBuilder builder = new EmbedBuilder();
-
-                builder.withAuthorName("Chirp Help");
-
-                builder.withTitle("I'm here to help! This is everything I know about that.");
-                builder.appendField(toExecute.commandName, toExecute.description, false);
-
-                BotUtils.SendEmbed(event.getChannel(), builder.build());
-            }
+        }
+        catch (StringIndexOutOfBoundsException e)
+        {
+            System.out.println();
         }
     }
 }
