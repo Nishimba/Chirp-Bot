@@ -29,7 +29,7 @@ abstract class Command
 	boolean takesArgs;
 
     //initiates the command
-    Command(String name, String desc, String[] usage, args)
+    Command(String name, String desc, String[] usage, boolean args)
     {
         description = desc;
         commandName = name;
