@@ -46,10 +46,14 @@ public class BotUtils
         });
     }
     //**************************************
-    //IO handling
+    //**IO handling**
     //read from any file
     //write to any file
-    //
+    // Command-query separation CQRS for large multiple user data manipulation sitations.
+
+
+    //Read lines from a given file(the file path is given as an argument) and output a list of each line of the file.
+
     public List<String> ReadLines(String filePath) // todo add a switch for delimiter?
     {
         try
@@ -71,5 +75,10 @@ public class BotUtils
             return null;
         }
     }
+    //method for appending lines to a file.
+
+
+
+
     //**************************************
 }
