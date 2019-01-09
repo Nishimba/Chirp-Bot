@@ -23,8 +23,8 @@ abstract class Command
      *  [] = optional parameter
      *  <yes|no> = required parameter between two values
      */
-    private String description;
-    private String[] getUsage;
+    String[] getUsage;
+    String description;
     String commandName;
 	boolean takesArgs;
 
