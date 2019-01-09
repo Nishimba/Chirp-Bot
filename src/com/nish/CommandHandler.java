@@ -81,7 +81,7 @@ public class CommandHandler
                     }
                     else
                     {
-                        BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry!");
+                        BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning:");
                     }
                 }
             }
