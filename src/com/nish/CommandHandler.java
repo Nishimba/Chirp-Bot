@@ -46,7 +46,7 @@ public class CommandHandler
 
                 builder.withAuthorName("Chirp Help");
 
-                builder.withTitle("I'm here to help! This is everything I know.\r\nFor help on a particular command, type that command after \"~help\"!");
+                builder.withTitle("I'm here to help! This is everything I know.\r\nFor help on a particular command, type that command!");
 
                 //for each entry add it to the embed
                 for (HashMap.Entry<String, Command> command: commandMap.entrySet())
