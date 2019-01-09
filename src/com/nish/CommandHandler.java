@@ -1,11 +1,9 @@
 package com.nish;
 
-import org.jetbrains.annotations.NotNull;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 /*
