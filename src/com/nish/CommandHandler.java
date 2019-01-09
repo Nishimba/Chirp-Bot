@@ -2,6 +2,7 @@ package com.nish;
 
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.HashMap;
 
@@ -29,14 +30,45 @@ public class CommandHandler
         //simple test command
         Command testCommand = new Command("test", "A simple test command", false)
         {
-            void Execute(MessageReceivedEvent event)
+            void Execute(MessageReceivedEvent event, String[] args)
             {
                 BotUtils.SendMessage(event.getChannel(), "Tweet Tweet");
             }
         };
 
+        //The help command
+        Command helpCommand = new Command("help", "A help command showing how to use Chirp.", true)
+        {
+            void Execute(MessageReceivedEvent event, String[] args)
+            {
+                EmbedBuilder builder = new EmbedBuilder();
+
+                builder.withAuthorName("Chirp Help");
+
+                //output help command if help is only command
+                if(args.length == 1)
+                {
+                    builder.withTitle("I'm here to help! This is everything I know.");
+
+                    for (HashMap.Entry<String, Command> command: commandMap.entrySet())
+                    {
+                        builder.appendField(command.getValue().commandName, command.getValue().description, false);
+                    }
+                }
+                //output specific help if command is specified
+                else if(args.length == 2 && commandMap.containsKey(args[1]))
+                {
+                    builder.withTitle("I'm here to help! This is what I know about that.");
+
+                    builder.appendField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
+                }
+                BotUtils.SendEmbed(event.getChannel(), builder.build());
+            }
+        };
+
         //addition of commands to hashmap
         commandMap.put(testCommand.commandName, testCommand);
+        commandMap.put(helpCommand.commandName, helpCommand);
     }
 
     //execute a command when the appropriate command is typed
@@ -62,11 +94,11 @@ public class CommandHandler
             //execute if commands are valid
             if(commandArgs.length == 1 && !toExecute.takesArgs)
             {
-                toExecute.Execute(event);
+                toExecute.Execute(event, null);
             }
             if(commandArgs.length == 2 && toExecute.takesArgs)
             {
-                toExecute.Execute(event);
+                toExecute.Execute(event, commandArgs);
             }
         }
     }
