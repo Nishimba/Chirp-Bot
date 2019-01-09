@@ -12,12 +12,14 @@ abstract class Command
     //description and name for help
     private String description;
     String commandName;
+    boolean takesArgs;
 
     //initiates the command
-    Command(String name, String desc)
+    Command(String name, String desc, boolean args)
     {
         description = desc;
         commandName = name;
+        takesArgs = args;
     }
 
     //execution to be filled in when creating a command

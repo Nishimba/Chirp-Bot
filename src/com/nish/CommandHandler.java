@@ -27,7 +27,7 @@ public class CommandHandler
     private void InitiateCommands()
     {
         //simple test command
-        Command testCommand = new Command("test", "A simple test command")
+        Command testCommand = new Command("test", "A simple test command", false)
         {
             void Execute(MessageReceivedEvent event)
             {
@@ -39,13 +39,35 @@ public class CommandHandler
         commandMap.put(testCommand.commandName, testCommand);
     }
 
-    //execute a command when the approprite command is typed
+    //execute a command when the appropriate command is typed
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event)
     {
-        if(event.getMessage().getContent().startsWith(BotUtils.BOT_PREFIX) && commandMap.containsKey(event.getMessage().getContent().substring(1)))
+        //store variables to easily access later
+        String messageContent = event.getMessage().getContent();
+        String[] commandArgs = messageContent.substring(1).split(" ");
+
+        //if the command is a command
+        if(messageContent.startsWith(BotUtils.BOT_PREFIX) && commandMap.containsKey(commandArgs[0]))
         {
-            commandMap.get(event.getMessage().getContent().substring(1)).Execute(event);
+            Command toExecute = commandMap.get(commandArgs[0]);
+
+            //If the command is provided with invalid arguments, output a help for it
+            if(commandArgs.length == 1 && toExecute.takesArgs || commandArgs.length == 2 && !toExecute.takesArgs)
+            {
+                //TODO - Provide text with usages for help to use the command
+                BotUtils.SendMessage(event.getChannel(), "This is debug text for incorrectly providing arguments");
+            }
+
+            //execute if commands are valid
+            if(commandArgs.length == 1 && !toExecute.takesArgs)
+            {
+                toExecute.Execute(event);
+            }
+            if(commandArgs.length == 2 && toExecute.takesArgs)
+            {
+                toExecute.Execute(event);
+            }
         }
     }
 }
