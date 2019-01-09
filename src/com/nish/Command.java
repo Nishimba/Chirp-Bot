@@ -10,7 +10,7 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 abstract class Command
 {
     //description and name for help
-    private String description;
+    String description;
     String commandName;
     boolean takesArgs;
 
@@ -22,6 +22,6 @@ abstract class Command
         takesArgs = args;
     }
 
-    //execution to be filled in when creating a command
-    abstract void Execute(MessageReceivedEvent event);
+    //execution to be filled in when creating a command, returns a boolean when executes properly
+    abstract void Execute(MessageReceivedEvent event, String[] args);
 }
