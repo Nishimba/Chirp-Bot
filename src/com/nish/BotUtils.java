@@ -78,6 +78,7 @@ class BotUtils
         }
     }
     //method for appending lines to a file.
+    //TODO add sort function and then add that as a flaggable option to this function.
     public static void AppendStrToFile(String filePath, String content, Boolean appendMode)
     {
         try

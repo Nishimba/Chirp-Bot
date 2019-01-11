@@ -114,10 +114,12 @@ public class CommandHandler
 
         //list all the heroes command
         //this will be used to test all the different fileio operations in the near future.
-        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", null,false)
+        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add"},true)
         {
             void Execute(MessageReceivedEvent event, String[] args)
             {
+               if (args.length == 4)
+                {
                 //create an embed
                 EmbedBuilder builder = new EmbedBuilder();
                 builder.withAuthorName("Chirp's Hero Dictionary");
@@ -125,19 +127,34 @@ public class CommandHandler
                 List<String> tempList = BotUtils.ReadLines("res/Heroes.txt");
                 Integer index = 0;
                 String tempString = "";
+
                 do {
                     tempString = tempString+(index+1)+". "+tempList.get(index)+"\n";
                     index ++;
-
                 }
                 while(index != tempList.size()-1);
-//                while(index != 25);
 
-                    builder.appendField("Heroes",tempString,false);
-
+                builder.appendField("Heroes",tempString,false);
                 BotUtils.SendEmbed(event.getChannel(), builder.build());
+                }
+               if (args.toString().contains("add"))
+               {
+//                   BotUtils.SendMessage(event.getChannel(), "Are you sure you want to add " + content + "?");
+//                   //react to the message with tick or cross and then look for the first yes/no react as the bool trigger.
+                   System.out.println(args);
+                   String content = "beep beep";
+                   BotUtils.SendMessage(event.getChannel(), content +" Added!");
+                   BotUtils.AppendStrToFile("res/Heroes.txt", content, true);
+               }
+//               else
+//               {
+//                   BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning:");
+//               }
+
+
             }
         };
+
 
         //addition of commands to hashmap
         commandMap.put(testCommand.commandName, testCommand);
