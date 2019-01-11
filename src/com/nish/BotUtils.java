@@ -8,9 +8,7 @@ import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,10 +50,11 @@ class BotUtils
     //**IO handling**
     //read from any file
     //write to any file
-    // Command-query separation CQRS for large multiple user data manipulation sitations.
+    //NOTE Command-query separation CQRS for large multiple user data manipulation sitations.
 
 
     //Read lines from a given file(the file path is given as an argument) and output a list of each line of the file.
+    //Retrieve a specific entry with the .get() method and pass in the index of the entry you would like.
 
     public static List<String> ReadLines(String filePath) // todo add a switch for delimiter?
     {
@@ -79,6 +78,24 @@ class BotUtils
         }
     }
     //method for appending lines to a file.
+    public static void AppendStrToFile(String filePath, String content, Boolean appendMode)
+    {
+        try
+        {
+            BufferedWriter out = new BufferedWriter(
+                    new FileWriter(filePath, appendMode));
+            out.write(content);
+            out.close();
+        }
+        catch(IOException e)
+        {
+            System.out.println("exception occurred" + e);
+        }
+    }
+
+
+
+
     //**************************************
 
     //Send embed to a given channel, with some exception catching
