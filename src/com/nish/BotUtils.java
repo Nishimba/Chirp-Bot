@@ -54,7 +54,7 @@ public class BotUtils
 
     //Read lines from a given file(the file path is given as an argument) and output a list of each line of the file.
 
-    public List<String> ReadLines(String filePath) // todo add a switch for delimiter?
+    public static List<String> ReadLines(String filePath) // todo add a switch for delimiter?
     {
         try
         {

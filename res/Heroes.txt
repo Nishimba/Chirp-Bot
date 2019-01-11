@@ -1,0 +1,27 @@
+Ana
+Bastion
+Brigitte
+D.Va
+Doomfist
+Genji
+Hanzo
+Junkrat
+Lucio
+McCree
+Mei
+Mercy
+Moira
+Orisa
+Pharah
+Reaper
+Reinhardt
+Roadhog
+Soldier: 76
+Sombra
+Symmetra
+Torbjorn
+Tracer
+Widowmaker
+Winston
+Zarya
+Zenyatta
