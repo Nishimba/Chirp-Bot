@@ -23,10 +23,8 @@ public class CommandHandler
         InitiateCommands();
     }
 
-    //print the usages for commands
-    private String OutputUsage(String CommandNameString)
+    String OutputUsage(String CommandNameString)
     {
-        //append a new line followed by each usage
         StringBuilder builtString = new StringBuilder();
         for (String s: commandMap.get(CommandNameString).getUsage)
         {
@@ -76,10 +74,7 @@ public class CommandHandler
                     if (commandMap.containsKey(args[1]))
                     {
                         builder.appendField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
-                        if(commandMap.get(args[1]).getUsage != null)
-                        {
-                            builder.appendField("Example uses of " + (commandMap.get(args[1]).commandName), OutputUsage(args[1]), false);
-                        }
+                        builder.appendField("Example uses of " + (commandMap.get(args[1]).commandName), OutputUsage(args[1]), false);
 
                         //send the embed once done
                         BotUtils.SendEmbed(event.getChannel(), builder.build());
@@ -89,15 +84,6 @@ public class CommandHandler
                         BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning:");
                     }
                 }
-            }
-        };
-
-        //Stop command
-        Command stopCommand = new Command("stop", "Shuts down Chirp.", null, false)
-        {
-            void Execute(MessageReceivedEvent event, String[] args)
-            {
-                System.exit(0);
             }
         };
 
@@ -114,7 +100,6 @@ public class CommandHandler
         commandMap.put(testCommand.commandName, testCommand);
         commandMap.put(helpCommand.commandName, helpCommand);
         commandMap.put(argsCommand.commandName, argsCommand);
-        commandMap.put(stopCommand.commandName, stopCommand);
     }
 
     //execute the command when the appropriate command is typed
