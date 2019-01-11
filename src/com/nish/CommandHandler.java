@@ -2,9 +2,11 @@ package com.nish;
 
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.obj.Message;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.HashMap;
+import java.util.List;
 
 /*
  * Created by Nishimba on 08/01/19
@@ -110,11 +112,39 @@ public class CommandHandler
             }
         };
 
+        //list all the heroes command
+        //this will be used to test all the different fileio operations in the near future.
+        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", null,false)
+        {
+            void Execute(MessageReceivedEvent event, String[] args)
+            {
+                //create an embed
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.withAuthorName("Chirp's Hero Dictionary");
+                builder.withTitle("Here's all the overwatch heroes i know!");
+                List<String> tempList = BotUtils.ReadLines("res/Heroes.txt");
+                Integer index = 0;
+                String tempString = "";
+                do {
+                    tempString = tempString+(index+1)+". "+tempList.get(index)+"\n";
+                    index ++;
+
+                }
+                while(index != tempList.size()-1);
+//                while(index != 25);
+
+                    builder.appendField("Heroes",tempString,false);
+
+                BotUtils.SendEmbed(event.getChannel(), builder.build());
+            }
+        };
+
         //addition of commands to hashmap
         commandMap.put(testCommand.commandName, testCommand);
         commandMap.put(helpCommand.commandName, helpCommand);
         commandMap.put(argsCommand.commandName, argsCommand);
         commandMap.put(stopCommand.commandName, stopCommand);
+        commandMap.put(heroCommand.commandName, heroCommand);
     }
 
     //execute the command when the appropriate command is typed
