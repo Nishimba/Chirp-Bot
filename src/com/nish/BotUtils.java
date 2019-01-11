@@ -79,10 +79,6 @@ class BotUtils
         }
     }
     //method for appending lines to a file.
-
-
-
-
     //**************************************
 
     //Send embed to a given channel, with some exception catching

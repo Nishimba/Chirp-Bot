@@ -11,22 +11,15 @@ import java.io.*;
 public class MainRunner
 {
     //What to do when the bot starts
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
         //build the client
-        IDiscordClient cli = BotUtils.getBuiltDiscordClient(GetTokenFromFile("res/BotToken.txt"));
+        IDiscordClient cli = BotUtils.getBuiltDiscordClient(BotUtils.ReadLines("res/BotToken.txt").get(0));
 
         //register it to listen to events in the MyEvents class
         cli.getDispatcher().registerListener(new CommandHandler());
 
         //login the client
         cli.login();
-    }
-
-    //Get the bot token from the specified file
-    private static String GetTokenFromFile(String tokenPath) throws IOException
-    {
-        BufferedReader tokenRead = new BufferedReader(new FileReader(tokenPath));
-        return tokenRead.readLine();
     }
 }
