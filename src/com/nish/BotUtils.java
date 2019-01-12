@@ -85,7 +85,8 @@ class BotUtils
         {
             BufferedWriter out = new BufferedWriter(
                     new FileWriter(filePath, appendMode));
-            out.write(content);
+            String contentFormatted = content + "\n";
+            out.write(contentFormatted);
             out.close();
         }
         catch(IOException e)

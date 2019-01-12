@@ -118,7 +118,8 @@ public class CommandHandler
         {
             void Execute(MessageReceivedEvent event, String[] args)
             {
-               if (args.length == 4)
+//                System.out.println(args[1]+ "\n" + "This is the args 1");
+               if (args[1].equals("list"))
                 {
                 //create an embed
                 EmbedBuilder builder = new EmbedBuilder();
@@ -137,19 +138,19 @@ public class CommandHandler
                 builder.appendField("Heroes",tempString,false);
                 BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
-               if (args.toString().contains("add"))
+               else if (args[1].equals("add"))
                {
 //                   BotUtils.SendMessage(event.getChannel(), "Are you sure you want to add " + content + "?");
 //                   //react to the message with tick or cross and then look for the first yes/no react as the bool trigger.
                    System.out.println(args);
                    String content = "beep beep";
                    BotUtils.SendMessage(event.getChannel(), content +" Added!");
-                   BotUtils.AppendStrToFile("res/Heroes.txt", content, true);
+                   BotUtils.AppendStrToFile("res/Heroes.txt", "aldkfjasldkjf", true);
                }
-//               else
-//               {
-//                   BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning:");
-//               }
+               else
+               {
+                   BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning:");
+               }
 
 
             }
