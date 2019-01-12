@@ -25,3 +25,4 @@ Widowmaker
 Winston
 Zarya
 Zenyatta
+Nishimba

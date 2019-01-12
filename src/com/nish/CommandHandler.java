@@ -143,9 +143,10 @@ public class CommandHandler
 //                   BotUtils.SendMessage(event.getChannel(), "Are you sure you want to add " + content + "?");
 //                   //react to the message with tick or cross and then look for the first yes/no react as the bool trigger.
                    System.out.println(args);
-                   String content = "beep beep";
+                   String content = args[2];  //TODO replace with all trailing strings following the "add" argument. ie. "~heroes add Hero 29" would add everything after "add" ie. "Hero 29"
+                                              //Current implementation only gets the following word.
                    BotUtils.SendMessage(event.getChannel(), content +" Added!");
-                   BotUtils.AppendStrToFile("res/Heroes.txt", "aldkfjasldkjf", true);
+                   BotUtils.AppendStrToFile("res/Heroes.txt", content, true);
                }
                else
                {
