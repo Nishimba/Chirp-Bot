@@ -124,7 +124,6 @@ public class CommandHandler
                 //create an embed
                 EmbedBuilder builder = new EmbedBuilder();
                 builder.withAuthorName("Chirp's Hero Dictionary");
-                builder.withTitle("Here's all the overwatch heroes i know!");
                 List<String> tempList = BotUtils.ReadLines("res/Heroes.txt");
                 Integer index = 0;
                 String tempString = "";
@@ -135,7 +134,7 @@ public class CommandHandler
                 }
                 while(index != tempList.size()-1);
 
-                builder.appendField("Heroes",tempString,false);
+                builder.appendField("Here's all the overwatch heroes i know!",tempString,false);
                 BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
                else if (args[1].equals("add"))
