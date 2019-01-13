@@ -1,5 +1,6 @@
 package com.nish;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
@@ -93,6 +94,28 @@ class BotUtils
         {
             System.out.println("exception occurred in AppendStrToFile" + e);
         }
+    }
+    public static boolean searchFile(String filePath, String content)
+    {
+       List<String> fileList = ReadLines(filePath);
+       int index = 0;
+       boolean found = false;
+       while (index < fileList.size() -1)
+       {
+           if (fileList.get(index).equals(content))
+           {
+               found = true;
+               break;
+           }
+           else
+           {
+               index ++;
+           }
+           //System.out.println(index + "   " + found);
+
+       }
+
+        return found;
     }
 //    public static void AlphabeticallySortFile(String filePath)
 //    {

@@ -114,7 +114,7 @@ public class CommandHandler
 
         //list all the heroes command
         //this will be used to test all the different fileio operations in the near future.
-        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add"},true)
+        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search"},true)
         {
             void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -147,6 +147,19 @@ public class CommandHandler
                    BotUtils.SendMessage(event.getChannel(), content +" Added!");
                    BotUtils.AppendStrToFile("res/Heroes.txt", content, true);
                }
+               else if (args[1].equals("search"))
+               {
+                   String content = args[2];
+                   Boolean found = BotUtils.searchFile("res/Heroes.txt", content);
+                   if (found)
+                   {
+                       BotUtils.SendMessage(event.getChannel(), content + " Found!");
+                   }
+                   else if (!found)
+                   {
+                       BotUtils.SendMessage(event.getChannel(), content + " could not be found :frowning:");
+                   }
+               }
                else
                {
                    BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning:");
@@ -163,6 +176,7 @@ public class CommandHandler
         commandMap.put(argsCommand.commandName, argsCommand);
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
+
     }
 
     //execute the command when the appropriate command is typed
