@@ -114,7 +114,7 @@ public class CommandHandler
 
         //list all the heroes command
         //this will be used to test all the different fileio operations in the near future.
-        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search"},true)
+        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search check"},true)
         {
             void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -159,6 +159,12 @@ public class CommandHandler
                    {
                        BotUtils.SendMessage(event.getChannel(), content + " could not be found :frowning:");
                    }
+               }
+               else if (args[1].equals("check"))
+               {
+                   String content = args[2];
+                   BotUtils.StringFunnel("res/Maps.txt", content);
+                   BotUtils.SendMessage(event.getChannel(), "Check console for output. StringFunnel called on maps.txt");
                }
                else
                {
