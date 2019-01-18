@@ -1,5 +1,6 @@
 package com.nish;
 
+import com.koloboke.collect.map.IntByteMap;
 import org.apache.commons.lang3.StringUtils;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
@@ -10,8 +11,11 @@ import sx.blah.discord.util.RequestBuffer;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Collections;
+import java.util.*;
 /*
  * Created by Nishimba on 06/01/19
  * Basic Utilities for any class in the Bot to use
@@ -147,11 +151,12 @@ class BotUtils
     }
     public static String StringFunnel(String filePath, String in)
 {
-    StringUtils.capitalize(in);
-    Boolean found = searchFile(filePath,in);
+    String input = StringUtils.capitalize(in);
+    System.out.println(input + " is input.");
+    Boolean found = searchFile(filePath,input);
     if (found)
     {
-        return in;
+        return input;
     }
     else
     {
@@ -159,17 +164,30 @@ class BotUtils
         //run the similarity checker against each entry in the list
         //the string with the highest similarity is selected as a candidate. Possible "match gradients" implementation?- if several match closely then return all of them.
         List<String> fileList = ReadLines(filePath);
-        List<String> rankedSimilarity;
+       // Map ranks = new HashMap<>();
         int index = 0;
+        double max = 0;
+        String maxPairValue = "";
+
+
+
         while (index < fileList.size() -1)
         {
 
-            rankedSimilarity.add(index) = StringSimilarity.similarity(fileList.get(index),in);
-            //get the highest number from rankedSimilarity and the index that won - use this to look back at fileList and present the associated key pair.
+            double similarityIndex = (StringSimilarity.similarity(fileList.get(index),input));
+            //ranks.put(fileList.get(index), similarityIndex);
+            if(similarityIndex > max)
+            {
+                max = similarityIndex;
+                maxPairValue = fileList.get(index);
+            }
+
             index++;
 
         }
-        return in;
+//        System.out.println("Here is the entrySet from the ranks hashmap \n" + ranks.entrySet());
+        return maxPairValue;
+
     }
 }
 

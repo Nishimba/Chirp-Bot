@@ -19,7 +19,7 @@ public class StringSimilarity {
 
     }
 
-    //implementation of the Levenshtein Edit Distance
+    //implementation of the Levenshtein Edit Distance from
     public static int editDistance(String s1, String s2) {
         s1 = s1.toLowerCase();
         s2 = s2.toLowerCase();
@@ -47,8 +47,4 @@ public class StringSimilarity {
         return costs[s2.length()];
     }
 
-    public static void printSimilarity(String s, String t) {
-        System.out.println(String.format(
-                "%.3f is the similarity between \"%s\" and \"%s\"", similarity(s, t), s, t));
-    }
 }
