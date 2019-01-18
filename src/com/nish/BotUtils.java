@@ -1,10 +1,9 @@
 package com.nish;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
+import org.apache.commons.lang3.StringUtils;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.handle.impl.obj.Embed;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
@@ -129,9 +128,6 @@ class BotUtils
 //        }
 //    }
 
-
-
-
     //**************************************
 
     //Send embed to a given channel, with some exception catching
@@ -149,4 +145,36 @@ class BotUtils
             }
         });
     }
+    public static String StringFunnel(String filePath, String in)
+{
+    StringUtils.capitalize(in);
+    Boolean found = searchFile(filePath,in);
+    if (found)
+    {
+        return in;
+    }
+    else
+    {
+        //get a copy of the list of all the lines in the document.
+        //run the similarity checker against each entry in the list
+        //the string with the highest similarity is selected as a candidate. Possible "match gradients" implementation?- if several match closely then return all of them.
+        List<String> fileList = ReadLines(filePath);
+        List<String> rankedSimilarity;
+        int index = 0;
+        while (index < fileList.size() -1)
+        {
+
+            rankedSimilarity.add(index) = StringSimilarity.similarity(fileList.get(index),in);
+            //get the highest number from rankedSimilarity and the index that won - use this to look back at fileList and present the associated key pair.
+            index++;
+
+        }
+        return in;
+    }
 }
+
+
+
+}
+
+
