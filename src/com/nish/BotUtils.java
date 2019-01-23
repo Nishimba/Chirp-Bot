@@ -1,18 +1,21 @@
 package com.nish;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
+import com.koloboke.collect.map.IntByteMap;
+import org.apache.commons.lang3.StringUtils;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.handle.impl.obj.Embed;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Collections;
+import java.util.*;
 /*
  * Created by Nishimba on 06/01/19
  * Basic Utilities for any class in the Bot to use
@@ -129,9 +132,6 @@ class BotUtils
 //        }
 //    }
 
-
-
-
     //**************************************
 
     //Send embed to a given channel, with some exception catching
@@ -149,4 +149,50 @@ class BotUtils
             }
         });
     }
+    public static String StringFunnel(String filePath, String in)
+{
+    String input = StringUtils.capitalize(in);
+    System.out.println(input + " is input.");
+    Boolean found = searchFile(filePath,input);
+    if (found)
+    {
+        return input;
+    }
+    else
+    {
+        //get a copy of the list of all the lines in the document.
+        //run the similarity checker against each entry in the list
+        //the string with the highest similarity is selected as a candidate. Possible "match gradients" implementation?- if several match closely then return all of them.
+        List<String> fileList = ReadLines(filePath);
+       // Map ranks = new HashMap<>();
+        int index = 0;
+        double max = 0;
+        String maxPairValue = "";
+
+
+
+        while (index < fileList.size() -1)
+        {
+
+            double similarityIndex = (StringSimilarity.similarity(fileList.get(index),input));
+            //ranks.put(fileList.get(index), similarityIndex);
+            if(similarityIndex > max)
+            {
+                max = similarityIndex;
+                maxPairValue = fileList.get(index);
+            }
+
+            index++;
+
+        }
+//        System.out.println("Here is the entrySet from the ranks hashmap \n" + ranks.entrySet());
+        return maxPairValue;
+
+    }
 }
+
+
+
+}
+
+

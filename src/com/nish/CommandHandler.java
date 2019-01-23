@@ -114,17 +114,17 @@ public class CommandHandler
 
         //list all the heroes command
         //this will be used to test all the different fileio operations in the near future.
-        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search"},true)
+        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search check"},true)
+    {
+        void Execute(MessageReceivedEvent event, String[] args)
         {
-            void Execute(MessageReceivedEvent event, String[] args)
-            {
 //                System.out.println(args[1]+ "\n" + "This is the args 1");
-               if (args[1].equals("list"))
-                {
+            if (args[1].equals("list"))
+            {
                 //create an embed
                 EmbedBuilder builder = new EmbedBuilder();
                 builder.withAuthorName("Chirp's Hero Dictionary");
-                List<String> tempList = BotUtils.ReadLines("res/Heroes.txt");
+                List<String> tempList = BotUtils.ReadLines(args[2]); //TODO replace this. do it. please.
                 Integer index = 0;
                 String tempString = "";
 
@@ -136,38 +136,44 @@ public class CommandHandler
 
                 builder.appendField("Here's all the overwatch heroes i know!",tempString,false);
                 BotUtils.SendEmbed(event.getChannel(), builder.build());
-                }
-               else if (args[1].equals("add"))
-               {
-//                   BotUtils.SendMessage(event.getChannel(), "Are you sure you want to add " + content + "?");
-//                   //react to the message with tick or cross and then look for the first yes/no react as the bool trigger.
-                   System.out.println(args);
-                   String content = args[2];  //TODO replace with all trailing strings following the "add" argument. ie. "~heroes add Hero 29" would add everything after "add" ie. "Hero 29"
-                                              //Current implementation only gets the following word.
-                   BotUtils.SendMessage(event.getChannel(), content +" Added!");
-                   BotUtils.AppendStrToFile("res/Heroes.txt", content, true);
-               }
-               else if (args[1].equals("search"))
-               {
-                   String content = args[2];
-                   Boolean found = BotUtils.searchFile("res/Heroes.txt", content);
-                   if (found)
-                   {
-                       BotUtils.SendMessage(event.getChannel(), content + " Found!");
-                   }
-                   else if (!found)
-                   {
-                       BotUtils.SendMessage(event.getChannel(), content + " could not be found :frowning:");
-                   }
-               }
-               else
-               {
-                   BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning:");
-               }
-
-
             }
-        };
+            else if (args[1].equals("add"))
+            {
+//                 BotUtils.SendMessage(event.getChannel(), "Are you sure you want to add " + content + "?");
+//                 //react to the message with tick or cross and then look for the first yes/no react as the bool trigger.
+                System.out.println(args);
+                String content = args[2];  //TODO replace with all trailing strings following the "add" argument. ie. "~heroes add Hero 29" would add everything after "add" ie. "Hero 29"
+                //Current implementation only gets the following word.
+                BotUtils.SendMessage(event.getChannel(), content +" Added!");
+                BotUtils.AppendStrToFile("res/Heroes.txt", content, true);
+            }
+            else if (args[1].equals("search"))
+            {
+                String content = args[2];
+                Boolean found = BotUtils.searchFile("res/Heroes.txt", content);
+                if (found)
+                {
+                    BotUtils.SendMessage(event.getChannel(), content + " Found!");
+                }
+                else if (!found)
+                {
+                    BotUtils.SendMessage(event.getChannel(), content + " could not be found :frowning:");
+                }
+            }
+            else if (args[1].equals("check"))
+            {
+                String content = args[2];
+                String boop = BotUtils.StringFunnel("res/Maps.txt", content);
+                BotUtils.SendMessage(event.getChannel(), "Closest match I could find was:" + boop);
+            }
+            else
+            {
+                BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning: \n You gave me \""+ args[2] +"\"");
+            }
+
+
+        }
+    };
 
 
         //addition of commands to hashmap
