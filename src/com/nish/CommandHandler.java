@@ -112,6 +112,21 @@ public class CommandHandler
             }
         };
 
+        Command c9Command = new Command("c9", "c9c9c9c9", null,false)
+        {
+            void Execute(MessageReceivedEvent event, String[] args)
+            {
+                BotUtils.SendMessage(event.getChannel(), "LULULULUL Z9 C9 C4 V8 XPEKE PS4 AK47 F4 B12 CS1.6 007 36DD 3DS WD40 R34 N64 C3P0 R2D2 H2O XBOX1 Knight F1 to D2");
+            }
+        };
+        Command modsCommand = new Command("mods", "mods BEST", null,false)
+        {
+            void Execute(MessageReceivedEvent event, String[] args)
+            {
+                BotUtils.SendMessage(event.getChannel(), "Nishimba is such a fucking good mod i swear to god it is amazing that this server has survived longer than any other don't get me started on how good of a mod Aliias is oh it boils my blood when other servers' mods don't do shit but this server if people don't want to be nice they're on the case (also btw i don't think i've seen other mods besides Rezha but he is lit chief if y'all out there keep it up and remember we need more mods like you)");
+            }
+        };
+
         //list all the heroes command
         //this will be used to test all the different fileio operations in the near future.
         Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search check"},true)
@@ -182,6 +197,9 @@ public class CommandHandler
         commandMap.put(argsCommand.commandName, argsCommand);
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
+        commandMap.put(c9Command.commandName, c9Command);
+        commandMap.put(modsCommand.commandName, modsCommand);
+
 
     }
 

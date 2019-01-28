@@ -54,8 +54,6 @@ class BotUtils
     //**IO handling**
     //read from any file
     //write to any file
-    //NOTE Command-query separation CQRS for large multiple user data manipulation sitations.
-
 
     //Read lines from a given file(the file path is given as an argument) and output a list of each line of the file.
     //Retrieve a specific entry with the .get() method and pass in the index of the entry you would like.
@@ -120,17 +118,6 @@ class BotUtils
 
         return found;
     }
-//    public static void AlphabeticallySortFile(String filePath)
-//    {
-//        try
-//        {
-//            //
-//        }
-//        catch(IOException e)
-//        {
-//            System.out.println("exception occured in sort" + e);
-//        }
-//    }
 
     //**************************************
 
