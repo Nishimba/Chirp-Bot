@@ -19,7 +19,7 @@ public class StringSimilarity {
 
     }
 
-    //implementation of the Levenshtein Edit Distance from
+    //implementation of the Levenshtein Edit Distance
     public static int editDistance(String s1, String s2) {
         s1 = s1.toLowerCase();
         s2 = s2.toLowerCase();

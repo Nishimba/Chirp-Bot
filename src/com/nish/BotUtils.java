@@ -136,79 +136,42 @@ class BotUtils
             }
         });
     }
-    public static String FileStringFunnel(String filePath, String in)
+    public static String StringFunnel(String filePath, String in)
     {
-    String input = StringUtils.capitalize(in);
-    System.out.println(input + " is input.");
-    Boolean found = searchFile(filePath,input);
-    if (found)
-    {
-        return input;
+        String input = StringUtils.capitalize(in);
+        if (searchFile(filePath,input))
+        {
+            return input;
+        }
+        else
+        {
+            List<String> fileList = ReadLines(filePath);
+            return ListCompare(fileList, input);
+        }
     }
-    else
+    public static String StringFunnel(HashMap<String,Command> hashMap, String in)
     {
-        //get a copy of the list of all the lines in the document.
-        //run the similarity checker against each entry in the list
-        //the string with the highest similarity is selected as a candidate. Possible "match gradients" implementation?- if several match closely then return all of them.
-        List<String> fileList = ReadLines(filePath);
-       // Map ranks = new HashMap<>();
+        List<String> keys = new ArrayList<>(hashMap.keySet());
+        return ListCompare(keys,in);
+    }
+    public static String ListCompare(List<String> candidates, String in)
+    {
+        String input = StringUtils.capitalize(in);
         int index = 0;
         double max = 0;
         String maxPairValue = "";
-
-
-
-        while (index < fileList.size() -1)
-        {
-
-            double similarityIndex = (StringSimilarity.similarity(fileList.get(index),input));
-            //ranks.put(fileList.get(index), similarityIndex);
-            if(similarityIndex > max)
+        while (index < candidates.size())
             {
-                max = similarityIndex;
-                maxPairValue = fileList.get(index);
-            }
-
-            index++;
-
-        }
-//        System.out.println("Here is the entrySet from the ranks hashmap \n" + ranks.entrySet());
-        return maxPairValue;
-
-    }
-    }
-    public static String HashMapStringFunnel(HashMap<String,Command> hashMap, String in)
-    {
-        String input = StringUtils.capitalize(in);
-
-            //get a copy of the list of all the lines in the document.
-            //run the similarity checker against each entry in the list
-            //the string with the highest similarity is selected as a candidate. Possible "match gradients" implementation?- if several match closely then return all of them.
-            int index = 0;
-            double max = 0;
-            String maxPairValue = "";
-
-        List<String> keys = new ArrayList<>(hashMap.keySet());
-
-
-            while (index < hashMap.size() -1)
-            {
-
-                double similarityIndex = (StringSimilarity.similarity(keys.get(index),input));
-                //ranks.put(fileList.get(index), similarityIndex);
+                double similarityIndex = (StringSimilarity.similarity(candidates.get(index),input));
                 if(similarityIndex > max)
                 {
                     max = similarityIndex;
-                    maxPairValue = keys.get(index);
+                    maxPairValue = candidates.get(index);
                 }
-
                 index++;
-
             }
-//        System.out.println("Here is the entrySet from the ranks hashmap \n" + ranks.entrySet());
             return maxPairValue;
-
-        }
+    }
 }
 
 
