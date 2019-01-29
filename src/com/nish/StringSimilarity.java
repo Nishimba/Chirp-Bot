@@ -1,5 +1,8 @@
 package com.nish;
 
+import org.eclipse.jetty.io.ssl.SslHandshakeListener;
+import sx.blah.discord.handle.impl.obj.Message;
+
 public class StringSimilarity {
 
     /**
@@ -15,8 +18,10 @@ public class StringSimilarity {
         if (longerLength == 0) {
             return 1.0; /* both strings are zero length */
         }
-        return (longerLength - editDistance(longer, shorter)) / (double) longerLength;
-
+        Double index = (longerLength - editDistance(longer, shorter)) / (double) longerLength;
+        //uncomment this for debugging purposes
+        System.out.println(index + "this is the comparison index");
+        return index;
     }
 
     //implementation of the Levenshtein Edit Distance
