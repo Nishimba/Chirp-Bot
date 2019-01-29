@@ -160,9 +160,10 @@ class BotUtils
         int index = 0;
         double max = 0;
         String maxPairValue = "";
+        double similarityIndex = 0;
         while (index < candidates.size())
             {
-                double similarityIndex = (StringSimilarity.similarity(candidates.get(index),input));
+                similarityIndex = (StringSimilarity.similarity(candidates.get(index),input));
                 if(similarityIndex > max)
                 {
                     max = similarityIndex;
@@ -170,7 +171,7 @@ class BotUtils
                 }
                 index++;
             }
-            return maxPairValue;
+            return maxPairValue + ":" + max;
     }
 }
 
