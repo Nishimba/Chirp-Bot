@@ -177,8 +177,8 @@ public class CommandHandler
             else if (args[1].equals("check"))
             {
                 String content = args[2];
-                String match = BotUtils.StringFunnel("res/Maps.txt", content);
-                BotUtils.SendMessage(event.getChannel(), "Closest match I could find was:" + match);
+                List<String> match = BotUtils.StringFunnel("res/Maps.txt", content);
+                BotUtils.SendMessage(event.getChannel(), "Closest match I could find was:" + match.get(0));
             }
             else
             {
@@ -253,14 +253,14 @@ public class CommandHandler
             }
             else if (messageContent.startsWith(BotUtils.BOT_PREFIX) && !commandArgs[0].substring(1).isEmpty())
             {
-                String match = BotUtils.StringFunnel(commandMap, commandArgs[0].substring(1));
+                List<String> match = BotUtils.StringFunnel(commandMap, commandArgs[0].substring(1));
                 if (match.isEmpty())
                 {
                     System.out.println("Someone has serious spelling issues...");
                 }
-                else if (!match.isEmpty())
+                else if (!match.isEmpty() && (Double.parseDouble(match.get(1)) >= 0.7))
                 {
-                    BotUtils.SendMessage(event.getChannel(), "I couldn't find that command! The closest I could find was ``" + match + "``");
+                    BotUtils.SendMessage(event.getChannel(), "I couldn't find that command! The closest I could find was ``" + match.get(0) + "``");
                 }
             }
         }

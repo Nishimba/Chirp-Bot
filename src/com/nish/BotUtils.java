@@ -50,14 +50,7 @@ class BotUtils
         });
     }
 
-    //**************************************
-    //**IO handling**
-    //read from any file
-    //write to any file
-
     //Read lines from a given file(the file path is given as an argument) and output a list of each line of the file.
-    //Retrieve a specific entry with the .get() method and pass in the index of the entry you would like.
-
     public static List<String> ReadLines(String filePath) // todo add a switch for delimiter?
     {
         try
@@ -79,8 +72,8 @@ class BotUtils
             return null;
         }
     }
-    //method for appending lines to a file.
-    //TODO add sort function and then add that as a flaggable option to this function.
+
+    //method for appending lines to a files
     public static void AppendStrToFile(String filePath, String content, Boolean appendMode)
     {
         try
@@ -96,30 +89,27 @@ class BotUtils
             System.out.println("exception occurred in AppendStrToFile" + e);
         }
     }
+
+    //returns true if the given string is found within the given file. otherwise returns false.
     public static boolean searchFile(String filePath, String content)
     {
        List<String> fileList = ReadLines(filePath);
        int index = 0;
        boolean found = false;
-       while (index < fileList.size() -1)
+       while (index < fileList.size() -1) //iterate through the file till the end.
        {
            if (fileList.get(index).equals(content))
            {
                found = true;
-               break;
+               break; //
            }
            else
            {
                index ++;
            }
-           //System.out.println(index + "   " + found);
-
        }
-
         return found;
     }
-
-    //**************************************
 
     //Send embed to a given channel, with some exception catching
     static void SendEmbed(IChannel channel, EmbedObject embed)
@@ -136,30 +126,27 @@ class BotUtils
             }
         });
     }
-    public static String StringFunnel(String filePath, String in)
+
+    //Methods with overloads for String or hashmap to pipe into listcomparison
+    public static List<String> StringFunnel(String filePath, String in)
     {
         String input = StringUtils.capitalize(in);
-        if (searchFile(filePath,input))
-        {
-            return input;
-        }
-        else
-        {
-            List<String> fileList = ReadLines(filePath);
-            return ListCompare(fileList, input);
-        }
+        List<String> fileList = ReadLines(filePath);
+        return ListCompare(fileList, input);
     }
-    public static String StringFunnel(HashMap<String,Command> hashMap, String in)
+    public static List<String> StringFunnel(HashMap<String,Command> hashMap, String in)
     {
         List<String> keys = new ArrayList<>(hashMap.keySet());
         return ListCompare(keys,in);
     }
-    public static String ListCompare(List<String> candidates, String in)
+
+    //Method to compare all the entries in a list against a given string.
+    public static List<String> ListCompare(List<String> candidates, String in)
     {
-        String input = StringUtils.capitalize(in);
+        String input = StringUtils.capitalize(in); //standardise all the strings.
         int index = 0;
         double max = 0;
-        String maxPairValue = "";
+        String maxPairValue = ""; //initialise
         double similarityIndex = 0;
         while (index < candidates.size())
             {
@@ -171,7 +158,12 @@ class BotUtils
                 }
                 index++;
             }
-            return maxPairValue + ":" + max;
+        //uncomment this for debugging purposes ie. fine-tuning the threshold for suggestions.
+        //return maxPairValue + ":" + max;
+        List<String> results = new ArrayList<>(); //purpose of the list is to make it easier to expose what the stringsimilarity index is, when fine tuning threshold for suggestions.
+        results.add(maxPairValue);
+        results.add(Double.toString(max));
+        return results;
     }
 }
 
