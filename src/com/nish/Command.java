@@ -9,31 +9,17 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 
 abstract class Command
 {
-    /*
-     * Command parameters
-     * ==================
-     * CommandName: Self-explanatory, name of the command that will be input by the user for a certain result
-     * Description: A description of the purpose (not the usage!) of the command, to be output within a help command
-     * getUsage: An array of strings that output different usage examples of the command e.g (an example "ar" command):
-     *          "ar create <tagname>      //creates tag",
-     *          "ar regex <tag> <value>     //edit the regex of a tag",
-     *          "ar response <tag> <value>  //change the response of a reply",
-     *
-     *  <> = required parameter
-     *  [] = optional parameter
-     *  <yes|no> = required parameter between two values
-     */
-    String[] getUsage;
-    String description;
-    String commandName;
-	boolean takesArgs;
+    String[] usages;//the ways that the command can be used
+    String description;//the general description of the command
+    String commandName;//the name of the command. What it is called using.
+	boolean takesArgs;//whether or not the command takes arguments
 
     //initiates the command
     Command(String name, String desc, String[] usage, boolean args)
     {
         description = desc;
         commandName = name;
-        getUsage = usage;
+        usages = usage;
 		takesArgs = args;
     }
 

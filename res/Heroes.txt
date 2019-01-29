@@ -1,4 +1,5 @@
 Ana
+Ashe
 Bastion
 Brigitte
 D.Va
@@ -23,5 +24,6 @@ Torbjorn
 Tracer
 Widowmaker
 Winston
+Wrecking Ball
 Zarya
 Zenyatta
