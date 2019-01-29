@@ -2,7 +2,6 @@ package com.nish;
 
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.impl.obj.Message;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.HashMap;
@@ -178,12 +177,12 @@ public class CommandHandler
             else if (args[1].equals("check"))
             {
                 String content = args[2];
-                String boop = BotUtils.StringFunnel("res/Maps.txt", content);
+                String boop = BotUtils.FileStringFunnel("res/Maps.txt", content);
                 BotUtils.SendMessage(event.getChannel(), "Closest match I could find was:" + boop);
             }
             else
             {
-                BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning: \n You gave me \""+ args[2] +"\"");
+                BotUtils.SendMessage(event.getChannel(), "This doesn't seem to be a valid command. I can't give you help with this, sorry! :frowning: \n You gave me \""+ args[args.length -1] +"\"");
             }
 
 
@@ -217,6 +216,7 @@ public class CommandHandler
             /*for (String s: commandArgs) {
                 System.out.println(s);
             }*/
+
             if(messageContent.startsWith(BotUtils.BOT_PREFIX) && commandMap.containsKey(commandArgs[0].substring(1)))
             {
                 Command toExecute = commandMap.get(commandArgs[0].substring(1));
@@ -250,6 +250,10 @@ public class CommandHandler
 
                     BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
+            }
+            else if (messageContent.startsWith(BotUtils.BOT_PREFIX) && !commandArgs[0].substring(1).isEmpty())
+            {
+                BotUtils.SendMessage(event.getChannel(), "I couldn't find that command! The closest I could find was ``" + BotUtils.HashMapStringFunnel(commandMap, commandArgs[0].substring(1))  + "``");
             }
         }
         catch (StringIndexOutOfBoundsException e)
