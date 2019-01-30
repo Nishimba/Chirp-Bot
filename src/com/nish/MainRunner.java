@@ -20,7 +20,19 @@ public class MainRunner
 
         //login the client
         cli.login();
+      
+        //wait for the client to be logged in before polling what guilds the bot is in
+        try
+        {
+            Thread.sleep(2000); //if the list is being output as blank, increase this number.
+        }
+        catch (java.lang.InterruptedException e)
+        {
+            System.out.println(e);
+        }
 
+        //print the list of guilds that the bot is in.
+        System.out.println(BotUtils.GetGuilds(cli));
         new DatabaseSetup();
     }
 }

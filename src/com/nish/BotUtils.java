@@ -3,7 +3,9 @@ package com.nish;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.api.internal.json.objects.GuildObject;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
@@ -160,6 +162,11 @@ public class BotUtils
             return maxPairValue;
         }
         return null;
+    }
+    //A method that returns the list of all the guilds that the bot is a part of.
+    public static List<IGuild> GetGuilds(IDiscordClient client)
+    {
+        return client.getGuilds();
     }
 }
 
