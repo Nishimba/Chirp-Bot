@@ -4,7 +4,6 @@ import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -163,7 +162,7 @@ public class CommandHandler
                     {
                         //checks the file for a specified string
                         String content = args[2];
-                        boolean found = BotUtils.searchFile("res/Heroes.txt", content);
+                        boolean found = BotUtils.SearchFile("res/Heroes.txt", content);
                         if (found) {
                             BotUtils.SendMessage(event.getChannel(), content + " Found!");
                         } else {
