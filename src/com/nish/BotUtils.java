@@ -93,7 +93,7 @@ public class BotUtils
     }
 
     //returns true if the given string is found within the given file. otherwise returns false.
-    static boolean searchFile(String filePath, String content)
+    static boolean SearchFile(String filePath, String content)
     {
        //return true if the file contains requested string
        List<String> fileList = ReadLines(filePath);
