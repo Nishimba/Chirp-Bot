@@ -13,32 +13,13 @@ import java.util.List;
 
 public class DatabaseSetup
 {
-    private Connection conn;
-
     public DatabaseSetup(List<IGuild> guilds)
     {
         try
         {
             List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ebookshop?useSSL=false&allowPublicKeyRetrieval=true", login.get(0), login.get(1));
-
-            Statement createStmt = conn.createStatement();
-
-            createStmt.executeQuery("USE discord");
-
-            for (IGuild guild:guilds)
-            {
-                String guildID = guild.getStringID();
-                String createServerTable = "CREATE TABLE IF NOT EXISTS Server_" + guildID + "(" +
-                        "UserID BIGINT NOT NULL," +
-                        "Level INT NOT NULL," +
-                        "XPAmount int NOT NULL," +
-                        "TimeStamp DATETIME," +
-                        "XPMultiplier DOUBLE," +
-                        "PRIMARY KEY(UserID));";
-
-                createStmt.execute(createServerTable);
-            }
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true", login.get(0), login.get(1));
+            new LevelUtils(conn, guilds);
         }
         catch (SQLException ex)
         {
