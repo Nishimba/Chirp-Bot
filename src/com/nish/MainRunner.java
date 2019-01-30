@@ -2,6 +2,7 @@ package com.nish;
 
 import com.dbase.DatabaseSetup;
 import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.handle.obj.IGuild;
 
 /*
  * Created by Nishimba on 06/01/19
@@ -33,6 +34,12 @@ public class MainRunner
 
         //print the list of guilds that the bot is in.
         System.out.println(BotUtils.GetGuilds(cli));
+        for(IGuild guild : cli.getGuilds())
+        {
+            System.out.println(guild.getName());
+        }
+
         new DatabaseSetup(BotUtils.GetGuilds(cli));
+
     }
 }

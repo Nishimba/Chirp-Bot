@@ -20,7 +20,7 @@ public class DatabaseSetup
         try
         {
             List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ebookshop?useSSL=false&allowPublicKeyRetrieval=true", login.get(0), login.get(1));
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
 
             Statement createStmt = conn.createStatement();
 
