@@ -1,25 +1,26 @@
 package com.dbase;
 
-import com.nish.BotUtils;
 import sx.blah.discord.handle.obj.IGuild;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
-/*
- * Created by Nishimba on 30/01/19
- * Setup for the database
- */
-
-public class DatabaseSetup
+class LevelUtils
 {
-    public DatabaseSetup(List<IGuild> guilds)
+    private Connection levelConn;
+
+    LevelUtils(Connection conn, List<IGuild> guilds)
+    {
+        levelConn = conn;
+        CreateLevelsDB(levelConn, guilds);
+    }
+
+    private void CreateLevelsDB(Connection conn, List<IGuild> guilds)
     {
         try
         {
-            List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
-            new LevelUtils(conn, guilds);
             Statement createStmt = conn.createStatement();
 
             createStmt.executeQuery("USE discord");
@@ -38,9 +39,9 @@ public class DatabaseSetup
                 createStmt.execute(createServerTable);
             }
         }
-        catch (SQLException ex)
+        catch (SQLException e)
         {
-            ex.printStackTrace();
+            e.printStackTrace();
         }
     }
 }
