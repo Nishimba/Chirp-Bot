@@ -1,8 +1,7 @@
 package com.nish;
 
+import com.dbase.DatabaseSetup;
 import sx.blah.discord.api.IDiscordClient;
-
-import java.io.*;
 
 /*
  * Created by Nishimba on 06/01/19
@@ -21,7 +20,7 @@ public class MainRunner
 
         //login the client
         cli.login();
-
+      
         //wait for the client to be logged in before polling what guilds the bot is in
         try
         {
@@ -34,5 +33,6 @@ public class MainRunner
 
         //print the list of guilds that the bot is in.
         System.out.println(BotUtils.GetGuilds(cli));
+        new DatabaseSetup();
     }
 }
