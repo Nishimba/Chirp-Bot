@@ -21,5 +21,14 @@ public class MainRunner
 
         //login the client
         cli.login();
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (java.lang.InterruptedException e)
+        {
+            System.out.println(e);
+        }
+        System.out.println(BotUtils.GetGuilds(cli));
     }
 }
