@@ -20,7 +20,7 @@ import java.util.List;
  * Basic Utilities for any class in the Bot to use
  */
 
-class BotUtils
+public class BotUtils
 {
     //Prefix for commands
     static String BOT_PREFIX = "~";
@@ -50,7 +50,7 @@ class BotUtils
     }
 
     //Read lines from a given file(the file path is given as an argument) and output a list of each line of the file.
-    static List<String> ReadLines(String filePath) // todo add a switch for delimiter?
+    public static List<String> ReadLines(String filePath) // todo add a switch for delimiter?
     {
         try
         {

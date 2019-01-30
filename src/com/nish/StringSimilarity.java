@@ -26,9 +26,8 @@ class StringSimilarity
         }
 
         //get index of similarity using Levenshtein
-        double index = (longerLength - editDistance(longer, shorter)) / (double) longerLength;
         //System.out.println(index + "this is the comparison index");//this line is for debugging
-        return index;
+        return (longerLength - editDistance(longer, shorter)) / (double) longerLength;
     }
 
     //implementation of the Levenshtein Edit Distance

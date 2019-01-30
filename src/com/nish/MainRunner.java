@@ -1,8 +1,7 @@
 package com.nish;
 
+import com.dbase.DatabaseSetup;
 import sx.blah.discord.api.IDiscordClient;
-
-import java.io.*;
 
 /*
  * Created by Nishimba on 06/01/19
@@ -21,5 +20,7 @@ public class MainRunner
 
         //login the client
         cli.login();
+
+        new DatabaseSetup();
     }
 }
