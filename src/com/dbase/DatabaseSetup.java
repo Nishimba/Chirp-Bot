@@ -1,6 +1,7 @@
 package com.dbase;
 
 import com.nish.BotUtils;
+import sx.blah.discord.handle.obj.IGuild;
 
 import java.sql.*;
 import java.util.List;
@@ -14,7 +15,7 @@ public class DatabaseSetup
 {
     private Connection conn;
 
-    public DatabaseSetup()
+    public DatabaseSetup(List<IGuild> guilds)
     {
         try
         {
@@ -25,15 +26,19 @@ public class DatabaseSetup
 
             createStmt.executeQuery("USE discord");
 
-            String createServerTable = "CREATE TABLE IF NOT EXISTS Server_314011439406776320(" +
-                    "UserID BIGINT NOT NULL," +
-                    "Level INT NOT NULL," +
-                    "XPAmount int NOT NULL," +
-                    "TimeStamp DATETIME," +
-                    "XPMultiplier DOUBLE," +
-                    "PRIMARY KEY(UserID));";
+            for (IGuild guild:guilds)
+            {
+                String guildID = guild.getStringID();
+                String createServerTable = "CREATE TABLE IF NOT EXISTS Server_" + guildID + "(" +
+                        "UserID BIGINT NOT NULL," +
+                        "Level INT NOT NULL," +
+                        "XPAmount int NOT NULL," +
+                        "TimeStamp DATETIME," +
+                        "XPMultiplier DOUBLE," +
+                        "PRIMARY KEY(UserID));";
 
-            createStmt.execute(createServerTable);
+                createStmt.execute(createServerTable);
+            }
         }
         catch (SQLException ex)
         {

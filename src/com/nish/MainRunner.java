@@ -33,6 +33,6 @@ public class MainRunner
 
         //print the list of guilds that the bot is in.
         System.out.println(BotUtils.GetGuilds(cli));
-        new DatabaseSetup();
+        new DatabaseSetup(BotUtils.GetGuilds(cli));
     }
 }
