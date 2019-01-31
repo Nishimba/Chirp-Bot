@@ -164,11 +164,19 @@ public class BotUtils
         return null;
     }
     //A method that returns the list of all the guilds that the bot is a part of.
-    public static List<IGuild> GetGuilds(IDiscordClient client)
+    static List<IGuild> GetGuilds(IDiscordClient client)
     {
         return client.getGuilds();
     }
 
+    //prints all guilds the bot is in
+    static void PrintGuilds(IDiscordClient client)
+    {
+        for(IGuild guild : client.getGuilds())
+        {
+            System.out.println(guild.getName());
+        }
+    }
 }
 
 

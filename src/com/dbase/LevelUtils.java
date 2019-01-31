@@ -14,21 +14,19 @@ class LevelUtils
     LevelUtils(Connection conn, List<IGuild> guilds)
     {
         levelConn = conn;
-        CreateLevelsDB(levelConn, guilds);
+        CreateLevelsDB(guilds);
     }
 
-    private void CreateLevelsDB(Connection conn, List<IGuild> guilds)
+    private void CreateLevelsDB(List<IGuild> guilds)
     {
         try
         {
-            Statement createStmt = conn.createStatement();
-
-            createStmt.executeQuery("USE discord");
+            Statement createStmt = levelConn.createStatement();
 
             for (IGuild guild:guilds)
             {
                 String guildID = guild.getStringID();
-                String createServerTable = "CREATE TABLE IF NOT EXISTS Server_" + guildID + "(" +
+                String createLevelsTable = "CREATE TABLE IF NOT EXISTS levels_" + guildID + "(" +
                         "UserID BIGINT NOT NULL," +
                         "Level INT NOT NULL," +
                         "XPAmount int NOT NULL," +
@@ -36,7 +34,7 @@ class LevelUtils
                         "XPMultiplier DOUBLE," +
                         "PRIMARY KEY(UserID));";
 
-                createStmt.execute(createServerTable);
+                createStmt.execute(createLevelsTable);
             }
         }
         catch (SQLException e)
