@@ -122,8 +122,13 @@ public class CommandHandler
             {
 
                 YTParser parser = new YTParser();
-                BotUtils.SendMessage(event.getChannel(), "Url is regex valid: "+parser.checklinkregex(args[1]));
+                Boolean valid = parser.checkLinkRegex(args[1]);
 
+                BotUtils.SendMessage(event.getChannel(), "Url is regex valid: "+ valid);
+                if(valid)
+                {
+                    BotUtils.SendMessage(event.getChannel(), "Video ID is: " + parser.extractVideoIdFromUrl(args[1]));
+                }
             }
         };
 

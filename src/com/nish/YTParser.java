@@ -27,7 +27,7 @@ public class YTParser
         return null;
     }
 
-    public Boolean checklinkregex(String url) {
+    public Boolean checkLinkRegex(String url) {
         Pattern compiledPattern = Pattern.compile(youTubeUrlRegEx);
         Matcher matcher = compiledPattern.matcher(url);
 
