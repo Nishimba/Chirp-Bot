@@ -1,10 +1,10 @@
 package com.dbase;
 
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -12,13 +12,13 @@ import java.util.List;
  * the utilities to be used for VOD database operations
  */
 
-class VODUtils
+public class VODUtils
 {
     //connection to the mysql server
-    private Connection VODConn;
+    private static Connection VODConn;
 
     //create the connection, and create tables for servers if the servers dont have tables yet
-    VODUtils(Connection conn, List<IGuild> guilds)
+    public VODUtils(Connection conn, List<IGuild> guilds)
     {
         VODConn = conn;
         CreateVODDB(guilds);
@@ -54,9 +54,36 @@ class VODUtils
         }
     }
 
-    //Add VOD info
-    private void AddVODRecord(List<Object> params)
+    //Add VOD info, returns VODID if added correctly, and NULL if not added
+    public static Integer AddVODRecord(ArrayList<Object> params, MessageReceivedEvent event)
     {
+        //addvod command takes params in this order: SR, Hero, Map, Youtube Link
+        try
+        {
+            Statement insertStmt = VODConn.createStatement();
 
+            String guildID = event.getGuild().getStringID();
+            String insertVOD = "INSERT INTO vod_" + guildID +"(" +
+                    "SkillRate, Hero, Map, YouTubeLink, Submitter, TimeSubmitted) VALUES" +
+                    "('" + params.get(0) + "','" +
+                    params.get(1).toString() + "','" +
+                    params.get(2).toString() + "','" +
+                    params.get(3).toString() + "','" +
+                    event.getAuthor().getStringID() + "','" +
+                    Timestamp.from(event.getMessage().getTimestamp()) + "');";//timestamp
+
+            insertStmt.execute(insertVOD);
+
+            //put the VOD into the database, and return the vod ID to the user
+            Statement selectStmt = VODConn.createStatement();
+            ResultSet VODID = selectStmt.executeQuery("SELECT LAST_INSERT_ID();");
+            VODID.next();
+            return VODID.getInt(1);
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
