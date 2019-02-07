@@ -52,6 +52,7 @@ public class YTParser
         Matcher matcher = compiledPattern.matcher(url);
         return matcher.find();
     }
+
     public String youTubeLinkWithoutProtocolAndDomain(String url) {
         Pattern compiledPattern = Pattern.compile(youTubeUrlRegEx);
         Matcher matcher = compiledPattern.matcher(url);
@@ -62,8 +63,14 @@ public class YTParser
         return url;
     }
     //pings the youtube api with the id of the video. converts the response to a string and determines if the video exists.
-    public Boolean queryAPI(String id)
+    public Boolean queryAPI(String input)
         {
+            if(!checkLinkRegex(input))
+            {
+                return false;
+            }
+            String id = extractVideoIdFromUrl(input);
+
             String query = "https://www.googleapis.com/youtube/v3/videos?part=id&id="+id+"&key="+APIKEY;
             //To check response by hand ie if the api changes in future, uncomment the prinln, run the function, and click the link generated in console
             //System.out.println("query is: "+query);

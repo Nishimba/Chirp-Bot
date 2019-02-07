@@ -122,17 +122,14 @@ public class CommandHandler
             {
 
                 YTParser parser = new YTParser();
-                if(parser.checkLinkRegex(args[1]))
+                Boolean valid = parser.queryAPI(args[1]);
+                if(valid)
                 {
-                    Boolean valid = parser.queryAPI(parser.extractVideoIdFromUrl(args[1]));
-                    if(valid)
-                    {
                         BotUtils.SendMessage(event.getChannel(), "This video is valid! :heart:");
-                    }
-                    else
-                    {
+                }
+                else
+                {
                         BotUtils.SendMessage(event.getChannel(), "This video is invalid :frowning:");
-                    }
                 }
             }
         };
