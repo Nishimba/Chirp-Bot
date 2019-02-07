@@ -18,17 +18,20 @@ import java.io.InputStream;
  * Created by Daalekz on 07/02/19
  * Handles verifying youtube links.
  */
+//Api query quota per day is 10k. Current quota status can be checked here.
+//https://console.developers.google.com/apis/api/youtube.googleapis.com/quotas?project=chirpbot&duration=PT1H
 
-
-//Using an adapted version jvanderwee's code for pattern matching provided youtube addresses and video id extraction.
+//an adapted version jvanderwee's code for pattern matching provided youtube addresses and video id extraction.
 // https://gist.github.com/jvanderwee/b30fdb496acff43aef8e
 public class YTParser
 {
-    //get the youtube api key-- need to work on this encaps.
+    //Read in the youtube Api Key
     private static final String APIKEY = BotUtils.ReadLines("res/APIKEY.txt").get(0);
 
-    final String youTubeUrlRegEx = "^(https?)?(://)?(www.)?(m.)?((youtube.com)|(youtu.be))/";
-    final String[] videoIdRegex = { "\\?vi?=([^&]*)","watch\\?.*v=([^&]*)", "(?:embed|vi?)/([^/?]*)", "^([A-Za-z0-9\\-]*)"};
+
+    //If youtube video id encoding changes, these will no longer function.
+    private final String youTubeUrlRegEx = "^(https?)?(://)?(www.)?(m.)?((youtube.com)|(youtu.be))/";
+    private final String[] videoIdRegex = { "\\?vi?=([^&]*)","watch\\?.*v=([^&]*)", "(?:embed|vi?)/([^/?]*)", "^([A-Za-z0-9\\-]*)"};
 
     public String extractVideoIdFromUrl(String url) {
         String youTubeLinkWithoutProtocolAndDomain = youTubeLinkWithoutProtocolAndDomain(url);
