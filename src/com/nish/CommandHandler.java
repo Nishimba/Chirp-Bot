@@ -116,18 +116,23 @@ public class CommandHandler
         };
 
         //Command to check youtube links.
-        Command ytLinkCommand = new Command("yt","Early stage youtube link checker utilising regex.", null, true)
+        Command ytLinkCommand = new Command("yt","Verify youtube links", null, true)
         {
             void Execute(MessageReceivedEvent event, String[] args)
             {
 
                 YTParser parser = new YTParser();
-                Boolean valid = parser.checkLinkRegex(args[1]);
-
-                BotUtils.SendMessage(event.getChannel(), "Url is regex valid: "+ valid);
-                if(valid)
+                if(parser.checkLinkRegex(args[1]))
                 {
-                    BotUtils.SendMessage(event.getChannel(), "Video ID is: " + parser.extractVideoIdFromUrl(args[1]));
+                    Boolean valid = parser.queryAPI(parser.extractVideoIdFromUrl(args[1]));
+                    if(valid)
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "This video is valid! :heart:");
+                    }
+                    else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "This video is invalid :frowning:");
+                    }
                 }
             }
         };
