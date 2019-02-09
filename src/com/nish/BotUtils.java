@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 /*
- * Created by Nishimba on 06/01/19
+ * Created by Nishimba & Daalekz on 06/01/19
  * Basic Utilities for any class in the Bot to use
  */
 
