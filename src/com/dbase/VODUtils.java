@@ -1,5 +1,7 @@
 package com.dbase;
 
+import com.nish.BotUtils;
+import com.nish.YTParser;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 
@@ -83,6 +85,73 @@ public class VODUtils
         catch (SQLException e)
         {
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    static ArrayList<Object> ValidateVODInfo(MessageReceivedEvent event, String[] args)
+    {
+        String errorString = "";
+        boolean hasError = false;
+        ArrayList<Object> correctedList = new ArrayList<>();
+
+        args[1] = args[1].substring(0, args[1].length() - 1);
+        args[2] = args[2].substring(0, args[2].length() - 1);
+        args[3] = args[3].substring(0, args[3].length() - 1);
+
+        //try catch in case the SR is not a valid number
+        try
+        {
+            //if the SR is invalid
+            if(Integer.parseInt(args[1]) < 0 || Integer.parseInt(args[1]) > 5000)
+            {
+                errorString += "SR must be a number between 0 and 5000.\n";
+                hasError = true;
+            }
+        }
+        catch (NumberFormatException e)//if SR is not a number this will error
+        {
+            errorString += "SR must be a number.\n";
+            hasError = true;
+        }
+        catch (NullPointerException e)
+        {
+            hasError = true;
+        }
+        correctedList.add(args[1]);//add SR to valid list
+
+        String heroCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Heroes.txt"), args[2], 0.7);
+        if(heroCheck == null)
+        {
+            errorString += args[2] + " is not a valid hero, try resubmitting the command with a valid hero, you may have made a spelling mistake.\n";
+            hasError = true;
+        }
+        correctedList.add(heroCheck);//add hero if hero is valid
+
+        String mapCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Maps.txt"), args[3], 0.7);
+        if(mapCheck == null)
+        {
+            errorString += args[3] + " is not a valid map, try resubmitting the command with a valid map, you may have made a spelling mistake.\n";
+            hasError = true;
+        }
+        correctedList.add(mapCheck);//add map if map is valid
+
+        YTParser parser = new YTParser();
+        boolean validLink = parser.queryAPI(args[4]);
+        if(!validLink)
+        {
+            errorString += "The YouTube link you submitted was invalid, please submit a valid one.\n";
+            hasError = true;
+        }
+        correctedList.add(args[4]);
+
+        if(!hasError)
+        {
+            return correctedList;
+        }
+        else
+        {
+            BotUtils.SendMessage(event.getChannel(), errorString);
             return null;
         }
     }

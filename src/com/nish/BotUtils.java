@@ -120,20 +120,20 @@ public class BotUtils
     //string funnel for arguments
     public static String StringFunnel(String filePath, String checkString)
     {
-        return ListCompare(ReadLines(filePath), checkString);
+        return ListCompare(ReadLines(filePath), checkString, 0.85);
     }
 
     //String funnel for commands
     static String StringFunnel(HashMap<String,Command> checkMap, String checkString)
     {
         List<String> keys = new ArrayList<>(checkMap.keySet());
-        return ListCompare(keys, checkString);
+        return ListCompare(keys, checkString, 0.85);
     }
 
     //Method to compare all the entries in a list against a given string.
-    private static String ListCompare(List<String> candidates, String checkString)
+    public static String ListCompare(List<String> candidates, String checkString, double close)
     {
-        double threshold = 0.85;//this will only return if above threshold
+        double threshold = close;//this will only return if above threshold
         int index = 0;//the index in the string to check
         double max = 0;//the maximum found sim index
         String maxPairValue = "";//the value of the maximum sim
