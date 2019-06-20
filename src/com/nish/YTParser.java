@@ -60,6 +60,7 @@ public class YTParser
             //Query to hit the api with. it's essentially just a search. the "part" field determines what data is returned.
             //we only need the ID as we only need to know if the video exists. If in future we need more info,
             //like when it was uploaded or the length, we add that to this query. check the youtube documentation for more info.
+
             String query = "https://www.googleapis.com/youtube/v3/videos?part=id&id="+id+"&key="+APIKEY;
             //To check response by hand ie if the api changes in future, uncomment the prinln, run the function, and click the link generated in console
             System.out.println("query is: "+query);

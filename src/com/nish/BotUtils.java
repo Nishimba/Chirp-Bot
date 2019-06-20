@@ -25,7 +25,7 @@ import java.util.List;
 public class BotUtils
 {
     //Prefix for commands
-    static String BOT_PREFIX = "~";
+    static String BOT_PREFIX = "!";
 
     //Create the client to connect to the server
     static IDiscordClient getBuiltDiscordClient(String token)
