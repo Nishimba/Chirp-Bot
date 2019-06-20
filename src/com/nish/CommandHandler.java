@@ -116,6 +116,25 @@ public class CommandHandler
             }
         };
 
+        //Command to check youtube links.
+        Command ytLinkCommand = new Command("yt","Verify youtube links", null, true)
+        {
+            void Execute(MessageReceivedEvent event, String[] args)
+            {
+
+                YTParser parser = new YTParser();
+                Boolean valid = parser.queryAPI(args[1]);
+                if(valid)
+                {
+                        BotUtils.SendMessage(event.getChannel(), "This video is valid! :heart:");
+                }
+                else
+                {
+                        BotUtils.SendMessage(event.getChannel(), "This video is invalid :frowning:");
+                }
+            }
+        };
+
         //list all the heroes command
         //this will be used to test all the different fileio operations in the near future.
         Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search check"},true)
@@ -192,7 +211,8 @@ public class CommandHandler
         commandMap.put(argsCommand.commandName, argsCommand);
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
-
+        commandMap.put(ytLinkCommand.commandName, ytLinkCommand);
+      
         new VODCommands(commandMap);
     }
 

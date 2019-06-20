@@ -27,7 +27,9 @@ public class DatabaseSetup
         }
         catch (SQLException ex)
         {
+            //a console log reminder for during the developing phase. Delete this line once the bot is complete.
             ex.printStackTrace();
+            System.out.println("***************  Did you remember to start the sql server? ***************");
         }
     }
 }
