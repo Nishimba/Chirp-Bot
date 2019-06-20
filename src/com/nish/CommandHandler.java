@@ -1,5 +1,6 @@
 package com.nish;
 
+import com.dbase.LevelCommands;
 import com.dbase.VODCommands;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
@@ -213,6 +214,7 @@ public class CommandHandler
         commandMap.put(ytLinkCommand.commandName, ytLinkCommand);
       
         new VODCommands(commandMap);
+        new LevelCommands(commandMap);
     }
 
     //execute the command when the appropriate command is typed
@@ -234,7 +236,7 @@ public class CommandHandler
                 Command toExecute = commandMap.get(commandArgs[0].substring(1));
 
                 //this is now a valid command!
-                if(toExecute.takesArgs && commandArgs.length == 1 && toExecute.commandName.equals("help"))
+                if(toExecute.takesArgs && commandArgs.length == 1 && (toExecute.commandName.equals("help") || toExecute.commandName.equals("rank")))
                 {
                     toExecute.Execute(event, commandArgs);
                 }
@@ -249,7 +251,7 @@ public class CommandHandler
 
                 //if the command is a command, but it has been used incorrectly, provide help
                 //if the command isn't "Help", it definitely needs to be longer if it's supposed to take arguments.
-                if(!toExecute.takesArgs && commandArgs.length > 1 || (toExecute.takesArgs && commandArgs.length == 1 && !toExecute.commandName.equals("help")))
+                if(!toExecute.takesArgs && commandArgs.length > 1 || (toExecute.takesArgs && commandArgs.length == 1 && !(toExecute.commandName.equals("help") || toExecute.commandName.equals("rank"))))
                 {
                     EmbedBuilder builder = new EmbedBuilder();
 

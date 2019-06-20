@@ -1,6 +1,7 @@
 package com.nish;
 
 import com.dbase.DatabaseSetup;
+import com.dbase.LevelCommands;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IGuild;
 
@@ -18,6 +19,7 @@ public class MainRunner
 
         //register it to listen to events in the MyEvents class
         cli.getDispatcher().registerListener(new CommandHandler());
+        cli.getDispatcher().registerListener(new LevelCommands());
 
         //login the client
         cli.login();
