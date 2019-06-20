@@ -25,11 +25,39 @@ public class VODCommands
                 if(VODinfo != null)
                 {
                     int VODID = VODUtils.AddVODRecord(VODinfo, event);
-                    BotUtils.SendMessage(event.getChannel(), "Your VOD has been successfully added! The ID is: " + VODID +".");
+                    event.getAuthor().getOrCreatePMChannel().sendMessage("Your VOD has the ID: " + VODID + ". Use this to delete or view the VOD.");
+                }
+                else
+                {
+                    BotUtils.SendMessage(event.getChannel(), "There appears to be an error in your command, ");
+                }
+            }
+        };
+
+        Command delVodCommand = new Command("deletevod", "Removes a VOD from the database.", new String[]{"~deletevod ID"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                try
+                {
+                    int success = VODUtils.DeleteVODRecord(Integer.parseInt(args[1]), event);
+                    if(success == 1)
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "Successfully deleted VOD!");
+                    }
+                    else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "VOD could not be found.");
+                    }
+                }
+                catch (NumberFormatException e)
+                {
+                    BotUtils.SendMessage(event.getChannel(), "VOD ID must be a number.");
                 }
             }
         };
 
         commandMap.put(addVodCommand.commandName, addVodCommand);
+        commandMap.put(delVodCommand.commandName, delVodCommand);
     }
 }

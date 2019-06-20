@@ -101,7 +101,7 @@ public class BotUtils
     }
 
     //Send embed to a given channel, with some exception catching
-    static void SendEmbed(IChannel channel, EmbedObject embed)
+    public static void SendEmbed(IChannel channel, EmbedObject embed)
     {
         //send message with error catching
         RequestBuffer.request(() -> {

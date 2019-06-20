@@ -4,6 +4,7 @@ import com.nish.BotUtils;
 import com.nish.YTParser;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.util.EmbedBuilder;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -90,6 +91,24 @@ public class VODUtils
         }
     }
 
+    public static int DeleteVODRecord(int VODID, MessageReceivedEvent event)
+    {
+        //delete vod removes a VOD based on its ID
+        try
+        {
+            Statement deleteStmt = VODConn.createStatement();
+
+            String guildID = event.getGuild().getStringID();
+            String deleteVOD = "DELETE FROM vod_" + guildID + " WHERE VOD_ID = " + VODID + ";";
+            return deleteStmt.executeUpdate(deleteVOD);
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
     static ArrayList<Object> ValidateVODInfo(MessageReceivedEvent event, String[] args)
     {
         String errorString = "";
@@ -107,6 +126,11 @@ public class VODUtils
         String temp = builder.toString();
 
         args = temp.split(",");
+        if(args.length != 4)
+        {
+            return null;
+        }
+
         //try catch in case the SR is not a valid number
         try
         {
@@ -155,6 +179,16 @@ public class VODUtils
 
         if(!hasError)
         {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.withAuthorName("Chirp Help");
+            embedBuilder.withTitle(event.getAuthor().getName() + "'s VOD");
+            embedBuilder.appendField("SR", correctedList.get(0).toString(), true);
+            embedBuilder.appendField("Hero", correctedList.get(1).toString(), true);
+            embedBuilder.appendField("Map", correctedList.get(2).toString(), true);
+            embedBuilder.appendField("YouTube Link", correctedList.get(3).toString(), false);
+
+            BotUtils.SendEmbed(event.getChannel(), embedBuilder.build());
+
             return correctedList;
         }
         else
