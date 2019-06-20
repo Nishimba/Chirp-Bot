@@ -32,14 +32,10 @@ public class MainRunner
             System.out.println(e);
         }
 
-        //print the list of guilds that the bot is in.
-        System.out.println(BotUtils.GetGuilds(cli));
-        for(IGuild guild : cli.getGuilds())
-        {
-            System.out.println(guild.getName());
-        }
+        //print the guilds the bot is in
+        BotUtils.PrintGuilds(cli);
 
+        //setup the database info
         new DatabaseSetup(BotUtils.GetGuilds(cli));
-
     }
 }

@@ -36,7 +36,7 @@ public class BotUtils
     }
 
     //Send message to a given channel, with some exception catching
-    static void SendMessage(IChannel channel, String message)
+    public static void SendMessage(IChannel channel, String message)
     {
         RequestBuffer.request(() -> {
             try
@@ -118,7 +118,7 @@ public class BotUtils
     }
 
     //string funnel for arguments
-    static String StringFunnel(String filePath, String checkString)
+    public static String StringFunnel(String filePath, String checkString)
     {
         return ListCompare(ReadLines(filePath), checkString);
     }
@@ -133,7 +133,7 @@ public class BotUtils
     //Method to compare all the entries in a list against a given string.
     private static String ListCompare(List<String> candidates, String checkString)
     {
-        double threshold = 0.7;//this will only return if above threshold
+        double threshold = 0.85;//this will only return if above threshold
         int index = 0;//the index in the string to check
         double max = 0;//the maximum found sim index
         String maxPairValue = "";//the value of the maximum sim
@@ -164,11 +164,19 @@ public class BotUtils
         return null;
     }
     //A method that returns the list of all the guilds that the bot is a part of.
-    public static List<IGuild> GetGuilds(IDiscordClient client)
+    static List<IGuild> GetGuilds(IDiscordClient client)
     {
         return client.getGuilds();
     }
 
+    //prints all guilds the bot is in
+    static void PrintGuilds(IDiscordClient client)
+    {
+        for(IGuild guild : client.getGuilds())
+        {
+            System.out.println(guild.getName());
+        }
+    }
 }
 
 

@@ -1,5 +1,6 @@
 package com.nish;
 
+import com.dbase.VODCommands;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
@@ -43,7 +44,7 @@ public class CommandHandler
         //simple test command
         Command testCommand = new Command("test", "A simple test command", new String[] {"~test (No extra arguments)", "example line 2", "example line 3"}, false)
         {
-            void Execute(MessageReceivedEvent event, String[] args)
+            public void Execute(MessageReceivedEvent event, String[] args)
             {
                 BotUtils.SendMessage(event.getChannel(), "Tweet Tweet");
             }
@@ -52,7 +53,7 @@ public class CommandHandler
         //The help command
         Command helpCommand = new Command("help", "A help command showing how to use Chirp.", new String[] {"usage dbug"},true)
         {
-            void Execute(MessageReceivedEvent event, String[] args)
+            public void Execute(MessageReceivedEvent event, String[] args)
             {
                 //Create an embed
                 EmbedBuilder builder = new EmbedBuilder();
@@ -100,7 +101,7 @@ public class CommandHandler
         //Stop command
         Command stopCommand = new Command("stop", "Shuts down Chirp.", null, false)
         {
-            void Execute(MessageReceivedEvent event, String[] args)
+            public void Execute(MessageReceivedEvent event, String[] args)
             {
                 System.exit(0);
             }
@@ -109,7 +110,7 @@ public class CommandHandler
         //random args command
         Command argsCommand = new Command("args", "Argument commands", new String[] {"usage dbug"},true)
         {
-            void Execute(MessageReceivedEvent event, String[] args)
+            public void Execute(MessageReceivedEvent event, String[] args)
             {
                 BotUtils.SendMessage(event.getChannel(), "Successful args");
             }
@@ -138,7 +139,7 @@ public class CommandHandler
         //this will be used to test all the different fileio operations in the near future.
         Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"list add search check"},true)
         {
-            void Execute(MessageReceivedEvent event, String[] args)
+            public void Execute(MessageReceivedEvent event, String[] args)
             {
                 //if the heroes list is to be listed
                 switch (args[1])
@@ -211,7 +212,8 @@ public class CommandHandler
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
         commandMap.put(ytLinkCommand.commandName, ytLinkCommand);
-
+      
+        new VODCommands(commandMap);
     }
 
     //execute the command when the appropriate command is typed
