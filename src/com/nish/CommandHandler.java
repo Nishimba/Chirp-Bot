@@ -119,9 +119,8 @@ public class CommandHandler
         //Command to check youtube links.
         Command ytLinkCommand = new Command("yt","Verify youtube links", null, true)
         {
-            void Execute(MessageReceivedEvent event, String[] args)
+            public void Execute(MessageReceivedEvent event, String[] args)
             {
-
                 YTParser parser = new YTParser();
                 Boolean valid = parser.queryAPI(args[1]);
                 if(valid)
