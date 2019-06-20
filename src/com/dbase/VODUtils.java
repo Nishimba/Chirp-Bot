@@ -7,6 +7,7 @@ import sx.blah.discord.handle.obj.IGuild;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -95,15 +96,22 @@ public class VODUtils
         boolean hasError = false;
         ArrayList<Object> correctedList = new ArrayList<>();
 
-        args[1] = args[1].substring(0, args[1].length() - 1);
-        args[2] = args[2].substring(0, args[2].length() - 1);
-        args[3] = args[3].substring(0, args[3].length() - 1);
+        //convert the array to string list
+        ArrayList<String> tempList = new ArrayList<>(Arrays.asList(args));
+        tempList.remove(0);
+        StringBuilder builder = new StringBuilder();
+        for(String s : tempList)
+        {
+            builder.append(s);
+        }
+        String temp = builder.toString();
 
+        args = temp.split(",");
         //try catch in case the SR is not a valid number
         try
         {
             //if the SR is invalid
-            if(Integer.parseInt(args[1]) < 0 || Integer.parseInt(args[1]) > 5000)
+            if(Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 5000)
             {
                 errorString += "SR must be a number between 0 and 5000.\n";
                 hasError = true;
@@ -118,32 +126,32 @@ public class VODUtils
         {
             hasError = true;
         }
-        correctedList.add(args[1]);//add SR to valid list
+        correctedList.add(args[0]);//add SR to valid list
 
-        String heroCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Heroes.txt"), args[2], 0.7);
+        String heroCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Heroes.txt"), args[1], 0.7);
         if(heroCheck == null)
         {
-            errorString += args[2] + " is not a valid hero, try resubmitting the command with a valid hero, you may have made a spelling mistake.\n";
+            errorString += args[1] + " is not a valid hero, try resubmitting the command with a valid hero, you may have made a spelling mistake.\n";
             hasError = true;
         }
         correctedList.add(heroCheck);//add hero if hero is valid
 
-        String mapCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Maps.txt"), args[3], 0.7);
+        String mapCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Maps.txt"), args[2], 0.7);
         if(mapCheck == null)
         {
-            errorString += args[3] + " is not a valid map, try resubmitting the command with a valid map, you may have made a spelling mistake.\n";
+            errorString += args[2] + " is not a valid map, try resubmitting the command with a valid map, you may have made a spelling mistake.\n";
             hasError = true;
         }
         correctedList.add(mapCheck);//add map if map is valid
 
         YTParser parser = new YTParser();
-        boolean validLink = parser.queryAPI(args[4]);
+        boolean validLink = parser.queryAPI(args[3]);
         if(!validLink)
         {
             errorString += "The YouTube link you submitted was invalid, please submit a valid one.\n";
             hasError = true;
         }
-        correctedList.add(args[4]);
+        correctedList.add(args[3]);
 
         if(!hasError)
         {
