@@ -62,7 +62,7 @@ public class YTParser
             //like when it was uploaded or the length, we add that to this query. check the youtube documentation for more info.
             String query = "https://www.googleapis.com/youtube/v3/videos?part=id&id="+id+"&key="+APIKEY;
             //To check response by hand ie if the api changes in future, uncomment the prinln, run the function, and click the link generated in console
-            //System.out.println("query is: "+query);
+            System.out.println("query is: "+query);
            try
            {
                InputStream response = new URL(query).openStream();
