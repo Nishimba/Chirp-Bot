@@ -2,6 +2,7 @@ package com.dbase;
 
 import com.nish.BotUtils;
 import com.nish.Command;
+import org.slf4j.event.Level;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
@@ -32,14 +33,6 @@ public class LevelCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command arrayCommand = new Command("array", "Test for level barriers array.", new String[]{"~array"}, false)
-        {
-            public void Execute(MessageReceivedEvent event, String[] args)
-            {
-                BotUtils.SendMessage(event.getChannel(), LevelUtils.PopulateLevelBarriers());
-            }
-        };
-
         Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
@@ -47,13 +40,13 @@ public class LevelCommands
 
                 if(args.length == 1)
                 {
-                    BotUtils.SendMessage(event.getChannel(), event.getAuthor().getDisplayName(event.getGuild()) + "'s XP: " + LevelUtils.getCurrentXP(event.getAuthor(), event.getGuild()));
+                    BotUtils.SendMessage(event.getChannel(), event.getAuthor().getDisplayName(event.getGuild()) + "'s Total XP: " + LevelUtils.getCurrentXP(event.getAuthor(), event.getGuild()) + " Level: " + LevelUtils.calculateCurrentLevel(event.getAuthor(), event.getGuild()));
                 }
                 else if(args.length == 2)
                 {
                     if(LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()) != -1)
                     {
-                        BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getDisplayName(event.getGuild()) + "'s XP: " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()));
+                        BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getDisplayName(event.getGuild()) + "'s Total XP: " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()) + " Level: " + LevelUtils.calculateCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild()));
                     }
                     else
                     {
@@ -63,7 +56,52 @@ public class LevelCommands
             }
         };
 
-        commandMap.put(arrayCommand.commandName, arrayCommand);
+        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyXP amount @mention"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                LevelUtils.addXP(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild());
+            }
+        };
+
+        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifyLevel amount @mention"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                int currentLevel = LevelUtils.getCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild());
+                int targetLevel = currentLevel + Integer.parseInt(args[1]);
+
+                int xpRequired = LevelUtils.xpRequiredForLevel(targetLevel, event.getMessage().getMentions().get(0), event.getGuild());
+
+                LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
+            }
+        };
+
+        Command setXPCommand = new Command("setXP", "Set users XP", new String[]{"~setXP amount @mention"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                int currentXP = LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild());
+                int targetXP = Integer.parseInt(args[1]);
+                int diff = targetXP - currentXP;
+                LevelUtils.addXP(diff, event.getMessage().getMentions().get(0), event.getGuild());
+            }
+        };
+
+        Command setLevelCommand = new Command("setLevel", "Set users level", new String[]{"~setLevel amount @mention"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                int xpRequired = LevelUtils.xpRequiredForLevel(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild());
+
+                LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
+            }
+        };
+
         commandMap.put(rankCommand.commandName, rankCommand);
+        commandMap.put(xpCommand.commandName, xpCommand);
+        commandMap.put(levelCommand.commandName, levelCommand);
+        commandMap.put(setXPCommand.commandName, setXPCommand);
+        commandMap.put(setLevelCommand.commandName, setLevelCommand);
     }
 }

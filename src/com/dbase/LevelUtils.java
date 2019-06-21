@@ -1,5 +1,6 @@
 package com.dbase;
 
+import com.nish.BotUtils;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
@@ -11,7 +12,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Random;
 
-class LevelUtils
+public class LevelUtils
 {
     private static Connection levelConn;
     private static List<IGuild> guildList;
@@ -50,24 +51,14 @@ class LevelUtils
         }
     }
 
-    public static String PopulateLevelBarriers()
+    public static void PopulateLevelBarriers()
     {
-        // Populate
-        levelBarriers[0] = 250;
-        for (int i = 1; i < 100; i++)
+        levelBarriers[0] = 0;
+        levelBarriers[1] = 250;
+        for (int i = 2; i < 100; i++)
         {
             levelBarriers[i] = levelBarriers[i - 1] + (((4.0 * i) / 5.0) * (Math.pow(i, 3.0 / 2.0) ) + 250);
         }
-
-        // Structure Output
-        String output = "";
-        for(int i = 0; i < 10; i++)
-        {
-            output += i + ": " + (int)levelBarriers[i] + "\n";
-        }
-
-        System.out.println("we did it nigger");
-        return output;
     }
 
     public static void allocateXP(MessageReceivedEvent event)
@@ -83,7 +74,7 @@ class LevelUtils
         }
     }
 
-    private static void addXP(int amount, IUser user, IGuild guild)
+    public static void addXP(int amount, IUser user, IGuild guild)
     {
         try
         {
@@ -96,9 +87,23 @@ class LevelUtils
 
             int newXP = currentXP + amount;
 
-            String updateTable = "UPDATE levels_" + guild.getStringID() + " SET XPAmount = "+ newXP + " WHERE UserID=" + user.getStringID() + ";";
+            // Update SQL Table with new XP
+            String updateXP = "UPDATE levels_" + guild.getStringID() + " SET XPAmount = "+ newXP + " WHERE UserID=" + user.getStringID() + ";";
+            createStmt.execute(updateXP);
 
-            createStmt.execute(updateTable);
+            // Check for level up
+            int localLevel = calculateCurrentLevel(user, guild);
+            int dbLevel = getCurrentLevel(user, guild);
+
+            if(dbLevel != localLevel)
+            {
+                // DM user level up message
+                BotUtils.SendMessage(user.getOrCreatePMChannel(), "You have leveled up in " + guild.getName() + "! You are now level " + localLevel + "!");
+
+                // Update SQL Table with new level
+                String updateLevel = "UPDATE levels_" + guild.getStringID() + " SET Level = "+ localLevel + " WHERE UserID=" + user.getStringID() + ";";
+                createStmt.execute(updateLevel);
+            }
         }
         catch (SQLException e)
         {
@@ -132,5 +137,56 @@ class LevelUtils
             e.printStackTrace();
             return -1;
         }
+    }
+
+    public static int getCurrentLevel(IUser user, IGuild guild)
+    {
+        try
+        {
+            Statement createStmt = levelConn.createStatement();
+
+            String guildID = guild.getStringID();
+            String authorID = user.getStringID();
+            String getUserLevel = "SELECT Level FROM levels_" + guildID + " WHERE UserID=" + authorID + ";";
+
+            ResultSet userLevelSet = createStmt.executeQuery(getUserLevel);
+
+            if(!userLevelSet.next() && !user.isBot()) {
+                System.out.println("Adding new user to table");
+                String addUserToDB = "INSERT INTO levels_" + guildID + " (UserID, Level, XPAmount, XPMultiplier) VALUES (" + authorID + ", 1, 0, 1);";
+                createStmt.execute(addUserToDB);
+                userLevelSet = createStmt.executeQuery(getUserLevel);
+                userLevelSet.next();
+            }
+            return userLevelSet.getInt(1);
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public static int calculateCurrentLevel(IUser user, IGuild guild)
+    {
+        int xp = getCurrentXP(user, guild);
+        int level = 0;
+
+        for(int i = 0; i < levelBarriers.length; i++)
+        {
+            if(xp >= levelBarriers[i])
+            {
+                level++;
+            }
+        }
+        return level;
+    }
+
+    public static int xpRequiredForLevel(int targetLevel, IUser user, IGuild guild)
+    {
+        int xp = getCurrentXP(user, guild);
+        int xpNeeded = (int)levelBarriers[targetLevel - 1];
+
+        return xpNeeded - xp + 1;
     }
 }

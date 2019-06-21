@@ -2,8 +2,12 @@ package com.nish;
 
 import com.dbase.DatabaseSetup;
 import com.dbase.LevelCommands;
+import com.dbase.LevelUtils;
+import javafx.scene.media.MediaPlayer;
 import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.handle.obj.ActivityType;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.StatusType;
 
 /*
  * Created by Nishimba on 06/01/19
@@ -37,7 +41,13 @@ public class MainRunner
         //print the guilds the bot is in
         BotUtils.PrintGuilds(cli);
 
+        // okay listen here cunt the fucking constructor for my class never runs so i cant put this there so its gotta be here
+        LevelUtils.PopulateLevelBarriers();
+
         //setup the database info
         new DatabaseSetup(BotUtils.GetGuilds(cli));
+
+        //Set Playing message
+        cli.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "GAMING");
     }
 }
