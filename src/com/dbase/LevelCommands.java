@@ -98,10 +98,19 @@ public class LevelCommands
             }
         };
 
+        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                LevelUtils.changeMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Integer.parseInt(args[1]));
+            }
+        };
+
         commandMap.put(rankCommand.commandName, rankCommand);
         commandMap.put(xpCommand.commandName, xpCommand);
         commandMap.put(levelCommand.commandName, levelCommand);
         commandMap.put(setXPCommand.commandName, setXPCommand);
         commandMap.put(setLevelCommand.commandName, setLevelCommand);
+        commandMap.put(changeMultiplierCommand.commandName, changeMultiplierCommand);
     }
 }
