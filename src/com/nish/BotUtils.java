@@ -117,6 +117,19 @@ public class BotUtils
         });
     }
 
+    //print the usages for commands
+    public static String OutputUsage(String CommandNameString, HashMap<String, Command> checkMap)
+    {
+        //append a new line followed by each usage
+        StringBuilder builtString = new StringBuilder();
+        for (String usage: checkMap.get(CommandNameString).usages)
+        {
+            builtString.append("\r\n" + usage);
+        }
+
+        return builtString.toString();
+    }
+
     //string funnel for arguments
     public static String StringFunnel(String filePath, String checkString)
     {

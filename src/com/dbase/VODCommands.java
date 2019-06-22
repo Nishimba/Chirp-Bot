@@ -3,6 +3,7 @@ package com.dbase;
 import com.nish.BotUtils;
 import com.nish.Command;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +30,16 @@ public class VODCommands
                 }
                 else
                 {
-                    BotUtils.SendMessage(event.getChannel(), "There appears to be an error in your command, ");
+                    EmbedBuilder builder = new EmbedBuilder();
+
+                    builder.withAuthorName("Chirp Help");
+
+                    //flavour text with the information about the command
+                    builder.withTitle("You seemed to have used the addvod command incorrectly! I'm here to help - here's everything I know about addvod:");
+                    builder.appendField(commandName, description, false);
+                    builder.appendField("Example uses of " + (commandName), BotUtils.OutputUsage(commandName, commandMap), false);//output usages for the command
+
+                    BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
             }
         };
