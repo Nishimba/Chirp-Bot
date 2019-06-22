@@ -99,13 +99,46 @@ class VODUtils
             Statement deleteStmt = VODConn.createStatement();
 
             String guildID = event.getGuild().getStringID();
-            String deleteVOD = "DELETE FROM vod_" + guildID + " WHERE VOD_ID = " + VODID + ";";
+            String deleteVOD = "DELETE FROM vod_" + guildID + " WHERE VOD_ID = '" + VODID + "';";
             return deleteStmt.executeUpdate(deleteVOD);
         }
         catch (SQLException e)
         {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    static void SelectVODRecord(int VODID, MessageReceivedEvent event)
+    {
+        //delete vod removes a VOD based on its ID
+        try
+        {
+            Statement selectStmt = VODConn.createStatement();
+
+            String guildID = event.getGuild().getStringID();
+            String selectVOD = "SELECT * FROM vod_" + guildID + " WHERE VOD_ID = '" + VODID + "';";
+
+            ResultSet results = selectStmt.executeQuery(selectVOD);
+            results.next();
+
+            if(results.getInt(1) == VODID)
+            {
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                embedBuilder.withAuthorName("Chirp Help");
+                embedBuilder.withTitle(event.getGuild().getUserByID(results.getLong(2)).getName() + "'s VOD");
+                embedBuilder.appendField("SR", "" + results.getInt(5), true);
+                embedBuilder.appendField("Hero", results.getString(3), true);
+                embedBuilder.appendField("Map", results.getString(4), true);
+                embedBuilder.appendField("YouTube Link", results.getString(7), false);
+
+                BotUtils.SendEmbed(event.getChannel(), embedBuilder.build());
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            BotUtils.SendMessage(event.getChannel(), "That VOD could not be found! Are you sure you entered the correct ID?");
         }
     }
 
