@@ -67,7 +67,23 @@ public class VODCommands
             }
         };
 
+        Command getVodCommand = new Command("getvod", "Gets information for a VOD.", new String[]{"~getvod ID"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                try
+                {
+                    VODUtils.SelectVODRecord(Integer.parseInt(args[1]), event);
+                }
+                catch (NumberFormatException e)
+                {
+                    BotUtils.SendMessage(event.getChannel(), "VOD ID must be a number.");
+                }
+            }
+        };
+
         commandMap.put(addVodCommand.commandName, addVodCommand);
         commandMap.put(delVodCommand.commandName, delVodCommand);
+        commandMap.put(getVodCommand.commandName, getVodCommand);
     }
 }

@@ -3,7 +3,6 @@ package com.nish;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.api.internal.json.objects.GuildObject;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
@@ -78,9 +77,9 @@ public class BotUtils
 
             //create a writeable string from the alphabetised contents
             String tempString = "";
-            for (int i = 0; i < alphaList.size(); i++)
+            for (String s : alphaList)
             {
-                tempString = tempString.concat(alphaList.get(i) + "\r\n");
+                tempString = tempString.concat(s + "\r\n");
             }
 
             Files.write(Paths.get(filePath), tempString.getBytes(), StandardOpenOption.WRITE);//overwrite file with new list
@@ -131,7 +130,7 @@ public class BotUtils
     }
 
     //string funnel for arguments
-    public static String StringFunnel(String filePath, String checkString)
+    static String StringFunnel(String filePath, String checkString)
     {
         return ListCompare(ReadLines(filePath), checkString, 0.85);
     }
@@ -146,7 +145,6 @@ public class BotUtils
     //Method to compare all the entries in a list against a given string.
     public static String ListCompare(List<String> candidates, String checkString, double close)
     {
-        double threshold = close;//this will only return if above threshold
         int index = 0;//the index in the string to check
         double max = 0;//the maximum found sim index
         String maxPairValue = "";//the value of the maximum sim
@@ -170,7 +168,7 @@ public class BotUtils
         //return maxPairValue + ":" + max;
 
         //if max is above the threshold, return the match
-        if(max > threshold)
+        if(max > close)
         {
             return maxPairValue;
         }
