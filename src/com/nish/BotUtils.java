@@ -101,7 +101,7 @@ public class BotUtils
     }
 
     //Send embed to a given channel, with some exception catching
-    static void SendEmbed(IChannel channel, EmbedObject embed)
+    public static void SendEmbed(IChannel channel, EmbedObject embed)
     {
         //send message with error catching
         RequestBuffer.request(() -> {
@@ -115,6 +115,19 @@ public class BotUtils
                 e.printStackTrace();
             }
         });
+    }
+
+    //print the usages for commands
+    public static String OutputUsage(String CommandNameString, HashMap<String, Command> checkMap)
+    {
+        //append a new line followed by each usage
+        StringBuilder builtString = new StringBuilder();
+        for (String usage: checkMap.get(CommandNameString).usages)
+        {
+            builtString.append("\r\n" + usage);
+        }
+
+        return builtString.toString();
     }
 
     //string funnel for arguments

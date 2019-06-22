@@ -10,7 +10,7 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 public abstract class Command
 {
     String[] usages;//the ways that the command can be used
-    String description;//the general description of the command
+    public String description;//the general description of the command
     public String commandName;//the name of the command. What it is called using.
 	boolean takesArgs;//whether or not the command takes arguments
 

@@ -25,19 +25,6 @@ public class CommandHandler
         InitiateCommands();
     }
 
-    //print the usages for commands
-    private String OutputUsage(String CommandNameString)
-    {
-        //append a new line followed by each usage
-        StringBuilder builtString = new StringBuilder();
-        for (String usage: commandMap.get(CommandNameString).usages)
-        {
-            builtString.append("\r\n" + usage);
-        }
-
-        return builtString.toString();
-    }
-
     //when creating a command, put the execution here and add it to the hashmap
     private void InitiateCommands()
     {
@@ -84,7 +71,7 @@ public class CommandHandler
                         //if the usages are not null, write them to the embed
                         if(commandMap.get(args[1]).usages != null)
                         {
-                            builder.appendField("This is how you can use " + (commandMap.get(args[1]).commandName) + ":", OutputUsage(args[1]), false);
+                            builder.appendField("This is how you can use " + (commandMap.get(args[1]).commandName) + ":", BotUtils.OutputUsage(args[1], commandMap), false);
                         }
 
                         //send the embed once done
@@ -258,7 +245,7 @@ public class CommandHandler
                     //flavour text with the information about the command
                     builder.withTitle("You seemed to have used the " + (toExecute.commandName) + " command incorrectly! I'm here to help - here's everything I know about " + toExecute.commandName + ":");
                     builder.appendField(toExecute.commandName, toExecute.description, false);
-                    builder.appendField("Example uses of " + (toExecute.commandName), OutputUsage(toExecute.commandName), false);//output usages for the command
+                    builder.appendField("Example uses of " + (toExecute.commandName), BotUtils.OutputUsage(toExecute.commandName, commandMap), false);//output usages for the command
 
                     BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
