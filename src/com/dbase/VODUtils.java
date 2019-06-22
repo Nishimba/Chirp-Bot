@@ -16,13 +16,13 @@ import java.util.List;
  * the utilities to be used for VOD database operations
  */
 
-public class VODUtils
+class VODUtils
 {
     //connection to the mysql server
     private static Connection VODConn;
 
     //create the connection, and create tables for servers if the servers dont have tables yet
-    public VODUtils(Connection conn, List<IGuild> guilds)
+    VODUtils(Connection conn, List<IGuild> guilds)
     {
         VODConn = conn;
         CreateVODDB(guilds);
@@ -59,7 +59,7 @@ public class VODUtils
     }
 
     //Add VOD info, returns VODID if added correctly, and NULL if not added
-    public static Integer AddVODRecord(ArrayList<Object> params, MessageReceivedEvent event)
+    static Integer AddVODRecord(ArrayList<Object> params, MessageReceivedEvent event)
     {
         //addvod command takes params in this order: SR, Hero, Map, Youtube Link
         try
@@ -91,7 +91,7 @@ public class VODUtils
         }
     }
 
-    public static int DeleteVODRecord(int VODID, MessageReceivedEvent event)
+    static int DeleteVODRecord(int VODID, MessageReceivedEvent event)
     {
         //delete vod removes a VOD based on its ID
         try

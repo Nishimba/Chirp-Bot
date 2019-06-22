@@ -25,7 +25,7 @@ public class YTParser
     private final String[] videoIdRegex = {"\\?vi?=([^&]*)", "watch\\?.*v=([^&]*)", "(?:embed|vi?)/([^/?]*)", "^([A-Za-z0-9\\-]*)"};
 
     //gets the video id from the given link.
-    public String extractVideoIdFromUrl(String url)
+    private String extractVideoIdFromUrl(String url)
     {
         String youTubeLinkWithoutProtocolAndDomain = youTubeLinkWithoutProtocolAndDomain(url);
         for (String regex : videoIdRegex)
@@ -41,7 +41,7 @@ public class YTParser
     }
 
     //preliminary regex check to keep inputs clean. Avoids having to unnecessarily ping the api with invalid links.
-    public Boolean checkLinkRegex(String url)
+    private Boolean checkLinkRegex(String url)
     {
         Pattern compiledPattern = Pattern.compile(youTubeUrlRegEx);
         Matcher matcher = compiledPattern.matcher(url);
@@ -49,7 +49,7 @@ public class YTParser
     }
 
     //sanitises link to allow each form of youtube link (share, etc.) to be processed.
-    public String youTubeLinkWithoutProtocolAndDomain(String url)
+    private String youTubeLinkWithoutProtocolAndDomain(String url)
     {
         Pattern compiledPattern = Pattern.compile(youTubeUrlRegEx);
         Matcher matcher = compiledPattern.matcher(url);
@@ -96,7 +96,7 @@ public class YTParser
         }
         catch (IOException e)
         {
-            System.out.println(e);
+            e.printStackTrace();
             return null;
         }
         return null;
