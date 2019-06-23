@@ -4,8 +4,14 @@ import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  * Created by Nishimba on 08/01/19
@@ -106,6 +112,8 @@ public class CommandHandler
             }
         };
 
+
+
         //random args command
         Command argsCommand = new Command("args", "Argument commands", new String[] {"usage dbug"},true)
         {
@@ -130,6 +138,35 @@ public class CommandHandler
                 else
                 {
                         BotUtils.SendMessage(event.getChannel(), "This video is invalid :frowning:");
+                }
+            }
+        };
+
+        //test converting timezones
+        Command timeCommand = new Command("time", "converts current system time to another using the provided timezone code", new String[] {"!time now PST/ECT/BET/AET/JST","!time 9AM PST"}, true)
+        {
+
+            void Execute(MessageReceivedEvent event, String[] args) {
+                if (args[1].toLowerCase().equals("now")) { //just return the current time for the provided timezone
+                    ZoneId sourceZoneId = ZoneId.systemDefault();
+                    ZoneId destZoneId = ZoneId.of(args[2].toUpperCase(), ZoneId.SHORT_IDS);
+                    TimeUtils parser = new TimeUtils();
+                    System.out.println(sourceZoneId.toString() + " to: " + destZoneId.toString());
+                    BotUtils.SendMessage(event.getChannel(), parser.convertTime(sourceZoneId, destZoneId, ZonedDateTime.now(sourceZoneId)));
+
+//                }else{
+//                    //check if provided timestamp is valid
+//                    String pattern = "^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$";
+//                    Pattern r = Pattern.compile(pattern);
+//                    Matcher m = r.matcher(args[1]);
+//                    if (m.find()) //is valid
+//                    {
+//                        ZoneId sourceZoneId = ZoneId.systemDefault();
+//                        ZoneId destZoneId = ZoneId.of(args[2].toUpperCase(), ZoneId.SHORT_IDS);
+//                        TimeUtils parser = new TimeUtils();
+//                        System.out.println(sourceZoneId.toString() + " to: " + destZoneId.toString());
+//                        BotUtils.SendMessage(event.getChannel(), parser.convertTime(sourceZoneId, destZoneId, //timezone difference???);
+//                    }
                 }
             }
         };
@@ -211,6 +248,7 @@ public class CommandHandler
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
         commandMap.put(ytLinkCommand.commandName, ytLinkCommand);
+        commandMap.put(timeCommand.commandName,timeCommand);
 
     }
 

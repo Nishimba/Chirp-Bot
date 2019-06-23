@@ -117,7 +117,7 @@ public class BotUtils
         });
     }
 
-    //string funnel for arguments
+    //string funnel for files
     static String StringFunnel(String filePath, String checkString)
     {
         return ListCompare(ReadLines(filePath), checkString);
