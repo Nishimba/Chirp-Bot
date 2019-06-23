@@ -4,8 +4,12 @@ import com.nish.BotUtils;
 import com.nish.Command;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.util.EmbedBuilder;
 
 import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 public class LevelCommands
@@ -70,6 +74,7 @@ public class LevelCommands
                 }
                 catch (Exception e)
                 {
+                    // TODO catch different exceptions and return different errors
                     BotUtils.SendMessage(event.getChannel(), "XP must be a number");
                 }
             }
@@ -92,6 +97,7 @@ public class LevelCommands
                 }
                 catch (Exception e)
                 {
+                    // TODO catch different exceptions and return different errors
                     BotUtils.SendMessage(event.getChannel(), "Level must be a number");
                 }
             }
@@ -112,6 +118,7 @@ public class LevelCommands
                 }
                 catch (Exception e)
                 {
+                    // TODO catch different exceptions and return different errors
                     BotUtils.SendMessage(event.getChannel(), "XP must be a number");
                 }
             }
@@ -131,8 +138,8 @@ public class LevelCommands
                 }
                 catch (Exception e)
                 {
+                    // TODO catch different exceptions and return different errors
                     BotUtils.SendMessage(event.getChannel(), "Level must be a number");
-                    e.printStackTrace();
                 }
             }
         };
@@ -147,16 +154,44 @@ public class LevelCommands
                 }
                 catch (Exception e)
                 {
+                    // TODO catch different exceptions and return different errors
                     BotUtils.SendMessage(event.getChannel(), "Modifier must be a number");
                 }
             }
         };
 
-        Command addLevelCutoff = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addLevelRole @role level"}, true)
+        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addLevelRole @role level"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
-                LevelUtils.addRoleToDB(event.getMessage().getRoleMentions().get(0), event.getGuild(), Integer.parseInt(args[2]));
+                IRole role = event.getMessage().getRoleMentions().get(0);
+                int level = Integer.parseInt(args[2]);
+                LevelUtils.addRoleToDB(role, event.getGuild(), level);
+                BotUtils.SendMessage(event.getChannel(), "Role " + role.getName() + " was given a level requirement of " + level);
+            }
+        };
+
+        Command top10Command = new Command("top10", "Outputs the top 10 users on the server", new String[]{"~top10"}, false)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                ResultSet results = LevelUtils.topN(event.getGuild(), 10);
+
+                int i = 0;
+
+                try
+                {
+                    while(results.next())
+                    {
+                        i++;
+                    }
+                }
+                catch (SQLException e)
+                {
+                    e.printStackTrace();
+                }
+
+                BotUtils.SendFile(event.getChannel(), LevelUtils.createLeaderboardCard(event, event.getGuild(), i));
             }
         };
 
@@ -166,6 +201,7 @@ public class LevelCommands
         commandMap.put(setXPCommand.commandName, setXPCommand);
         commandMap.put(setLevelCommand.commandName, setLevelCommand);
         commandMap.put(changeMultiplierCommand.commandName, changeMultiplierCommand);
-        commandMap.put(addLevelCutoff.commandName, addLevelCutoff);
+        commandMap.put(addLevelCutoffCommand.commandName, addLevelCutoffCommand);
+        commandMap.put(top10Command.commandName, top10Command);
     }
 }

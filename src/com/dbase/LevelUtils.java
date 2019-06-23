@@ -3,10 +3,12 @@ package com.dbase;
 import com.nish.BotUtils;
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
+import org.eclipse.jetty.client.api.Authentication;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.util.EmbedBuilder;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -536,6 +538,78 @@ public class LevelUtils
         }
     }
 
+    public static ResultSet topN(IGuild guild, int count)
+    {
+        String guildID = guild.getStringID();
+
+        try
+        {
+            Statement createStmt = levelConn.createStatement();
+
+            String getTop = "SELECT * FROM levels_" + guildID + " ORDER BY XPAmount DESC LIMIT " + count + ";";
+
+            ResultSet results = createStmt.executeQuery(getTop);
+
+            return results;
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static File createLeaderboardCard(MessageReceivedEvent event, IGuild guild, int count)
+    {
+        File output;
+
+        ResultSet results = topN(guild, count);
+
+        int height = 300 * count;
+
+        BufferedImage bigCard = new BufferedImage(1000, height, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g = bigCard.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new Color(38, 39, 43));
+        g.fillRect(0, 0, 1000, height);
+
+        try
+        {
+            int y = 0;
+            while(results.next())
+            {
+                IUser user = event.getClient().getUserByID(results.getLong(1));
+                File outputAvatar = getAvatar(user);
+                Image avatar = ImageIO.read(outputAvatar).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+                g.drawImage(drawRankCard(user, guild, avatar), 0, y, null);
+                y += 300;
+            }
+
+            g.setColor(new Color(10, 10, 11));
+            g.setStroke(new BasicStroke(10));
+            g.drawRect(0, 0, 1000, height);
+
+            int lineY = 300;
+
+            for(int i = 0; i < count-1; i++)
+            {
+                g.drawLine(0, lineY, 1000, lineY);
+                lineY+=300;
+            }
+
+            // Construct image
+            output = new File("res/bigCard.png");
+            ImageIO.write(bigCard, "png", output);
+            return output;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static File getAvatar(IUser user)
     {
         try
@@ -958,7 +1032,6 @@ public class LevelUtils
         {
             g.setColor(highlightColor);
             g.setStroke(new BasicStroke(10));
-            g.drawRoundRect(0, 0, imageWidth, imageHeight, 10, 10);
             g.fillRoundRect(296, 204, 640, 32, 10, 10);
         }
         g.setStroke(new BasicStroke(4));
