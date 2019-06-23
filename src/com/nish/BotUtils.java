@@ -6,9 +6,11 @@ import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.api.internal.json.objects.GuildObject;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -44,6 +46,22 @@ public class BotUtils
                 channel.sendMessage(message);
             }
             catch (DiscordException e)
+            {
+                System.err.println("Message could not be sent with error: ");
+                e.printStackTrace();
+            }
+        });
+    }
+
+    //Send file to a given channel, with some exception catching
+    public static void SendFile(IChannel channel, File image)
+    {
+        RequestBuffer.request(() -> {
+            try
+            {
+                channel.sendFile(image);
+            }
+            catch (Exception e)
             {
                 System.err.println("Message could not be sent with error: ");
                 e.printStackTrace();

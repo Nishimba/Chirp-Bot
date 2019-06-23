@@ -5,6 +5,7 @@ import com.dbase.LevelCommands;
 import com.dbase.LevelUtils;
 import javafx.scene.media.MediaPlayer;
 import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.handle.impl.obj.User;
 import sx.blah.discord.handle.obj.ActivityType;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.StatusType;
@@ -22,8 +23,8 @@ public class MainRunner
         IDiscordClient cli = BotUtils.getBuiltDiscordClient(BotUtils.ReadLines("res/BotToken.txt").get(0));
 
         //register it to listen to events in the MyEvents class
-        cli.getDispatcher().registerListener(new CommandHandler());
         cli.getDispatcher().registerListener(new LevelCommands());
+        cli.getDispatcher().registerListener(new CommandHandler());
 
         //login the client
         cli.login();
@@ -48,6 +49,6 @@ public class MainRunner
         new DatabaseSetup(BotUtils.GetGuilds(cli));
 
         //Set Playing message
-        cli.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "GAMING");
+        cli.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "Type ~help for help!");
     }
 }
