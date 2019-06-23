@@ -19,11 +19,19 @@ public class DatabaseSetup
         {
             //uses login details to create the connection
             List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
+            if (login != null)
+            {
+                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
 
-            //creates the vod and level utilities
-            new LevelUtils(conn, guilds);
-            new VODUtils(conn, guilds);
+                //creates the vod and level utilities
+                new LevelUtils(conn, guilds);
+                new VODUtils(conn, guilds);
+            }
+            else
+            {
+                System.out.println("Login information for database could not be found, shutting down.");
+                System.exit(0);
+            }
         }
         catch (SQLException ex)
         {

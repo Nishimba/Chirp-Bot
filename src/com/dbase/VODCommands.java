@@ -17,7 +17,7 @@ public class VODCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command addVodCommand = new Command("addvod", "Adds a VOD to the database.", new String[]{"~addvod SR, Hero, Map, YT Link"}, true)
+        Command addVodCommand = new Command("addvod", "Adds a VOD to the database.", new String[]{"~addvod [SR], [Hero], [Map], [YT Link]"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -25,8 +25,15 @@ public class VODCommands
 
                 if(VODinfo != null)
                 {
-                    int VODID = VODUtils.AddVODRecord(VODinfo, event);
-                    event.getAuthor().getOrCreatePMChannel().sendMessage("Your VOD has the ID: " + VODID + ". Use this to delete or view the VOD.");
+                    Integer VODID = VODUtils.AddVODRecord(VODinfo, event);
+                    if(VODID != null)
+                    {
+                        event.getAuthor().getOrCreatePMChannel().sendMessage("Your VOD has the ID: " + VODID + ". Use this to delete or view the VOD.");
+                    }
+                    else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "There was an error retrieving VOD ID, please contact a staff member for help!");
+                    }
                 }
                 else
                 {

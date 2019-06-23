@@ -3,6 +3,8 @@ package com.nish;
 import com.dbase.DatabaseSetup;
 import sx.blah.discord.api.IDiscordClient;
 
+import java.util.Objects;
+
 /*
  * Created by Nishimba on 06/01/19
  */
@@ -13,7 +15,17 @@ public class MainRunner
     public static void main(String[] args)
     {
         //build the client
-        IDiscordClient cli = BotUtils.getBuiltDiscordClient(BotUtils.ReadLines("res/BotToken.txt").get(0));
+        IDiscordClient cli;
+        try
+        {
+            cli = BotUtils.getBuiltDiscordClient(Objects.requireNonNull(BotUtils.ReadLines("res/BotToken.txt")).get(0));
+        }
+        catch(NullPointerException e)
+        {
+            cli = null;
+            System.out.println("Bot Token was null and could not connect, shutting down.");
+            System.exit(0);
+        }
 
         //register it to listen to events in the MyEvents class
         cli.getDispatcher().registerListener(new CommandHandler());

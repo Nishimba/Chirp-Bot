@@ -2,6 +2,7 @@ package com.nish;
 
 import java.io.*;
 import java.net.*;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
 public class YTParser
 {
     //Read in the youtube Api Key
-    private static final String APIKEY = BotUtils.ReadLines("res/APIKEY.txt").get(0);
+    private static final String APIKEY = Objects.requireNonNull(BotUtils.ReadLines("res/APIKEY.txt")).get(0);
 
     //If youtube video id encoding changes, these will no longer function.
     private final String youTubeUrlRegEx = "^(https?)?(://)?(www.)?(m.)?((youtube.com)|(youtu.be))/";

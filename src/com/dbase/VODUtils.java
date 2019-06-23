@@ -8,7 +8,6 @@ import sx.blah.discord.util.EmbedBuilder;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -148,17 +147,7 @@ class VODUtils
         boolean hasError = false;
         ArrayList<Object> correctedList = new ArrayList<>();
 
-        //convert the array to string list
-        ArrayList<String> tempList = new ArrayList<>(Arrays.asList(args));
-        tempList.remove(0);
-        StringBuilder builder = new StringBuilder();
-        for(String s : tempList)
-        {
-            builder.append(s);
-        }
-        String temp = builder.toString();
-
-        args = temp.split(",");
+        args = BotUtils.convertArgsToList(args);
         if(args.length != 4)
         {
             return null;
@@ -168,7 +157,8 @@ class VODUtils
         try
         {
             //if the SR is invalid
-            if(Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 5000)
+            int SR = Integer.parseInt(args[0]);
+            if(SR < 0 || SR > 5000)
             {
                 errorString += "SR must be a number between 0 and 5000.\n";
                 hasError = true;
@@ -185,22 +175,47 @@ class VODUtils
         }
         correctedList.add(args[0]);//add SR to valid list
 
-        String heroCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Heroes.txt"), args[1], 0.7);
-        if(heroCheck == null)
+        //read heroes and do spellchecking
+        List<String> heroesList = BotUtils.ReadLines("res/Heroes.txt");
+        String heroCheck = null;
+        if(heroesList != null)
+        {
+             heroCheck = BotUtils.ListCompare(heroesList, args[1], 0.7);
+        }
+        else
+        {
+            errorString += "Error reading heroes file, please ask staff for help!";
+            hasError = true;
+        }
+
+        if(heroCheck == null && heroesList != null)
         {
             errorString += args[1] + " is not a valid hero, try resubmitting the command with a valid hero, you may have made a spelling mistake.\n";
             hasError = true;
         }
         correctedList.add(heroCheck);//add hero if hero is valid
 
-        String mapCheck = BotUtils.ListCompare(BotUtils.ReadLines("res/Maps.txt"), args[2], 0.7);
-        if(mapCheck == null)
+        //Read maps and do spellchecking
+        List<String> mapsList = BotUtils.ReadLines("res/Maps.txt");
+        String mapCheck = null;
+        if (mapsList != null)
+        {
+            mapCheck = BotUtils.ListCompare(mapsList, args[2], 0.7);
+        }
+        else
+        {
+            errorString += "Error reading heroes file, please ask staff for help!";
+            hasError = true;
+        }
+
+        if(mapCheck == null && mapsList != null)
         {
             errorString += args[2] + " is not a valid map, try resubmitting the command with a valid map, you may have made a spelling mistake.\n";
             hasError = true;
         }
         correctedList.add(mapCheck);//add map if map is valid
 
+        //check youtube link with youtube parser
         YTParser parser = new YTParser();
         boolean validLink = parser.queryAPI(args[3]);
         if(!validLink)
