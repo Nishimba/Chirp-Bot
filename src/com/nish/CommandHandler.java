@@ -134,7 +134,7 @@ public class CommandHandler
                     {
                         EmbedBuilder builder = new EmbedBuilder();//create an embed builder
                         builder.withAuthorName("Chirp's Hero Dictionary");
-                        List<String> fileList = BotUtils.ReadLines("res/Heroes.txt");//read lines from a given filepath
+                        List<String> fileList = BotUtils.ReadLines("res/Maps.txt");//read lines from a given filepath
                         String embedString = "";//the string that will contain the list
 
                         //for each string in the list, add it to the embed with the number and a newline
