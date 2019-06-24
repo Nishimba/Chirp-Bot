@@ -51,7 +51,7 @@ hs_err_pid*
 .idea/modules.xml
 .idea/*.iml
 .idea/modules
-.idea/
+
 
 # CMake
 cmake-build-*/
@@ -91,3 +91,4 @@ res/BotToken.txt
 res/APIKEY.txt
 res/DBConfig.txt
 out/
+.idea/
