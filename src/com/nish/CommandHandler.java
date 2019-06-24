@@ -5,6 +5,11 @@ import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,10 +143,65 @@ public class CommandHandler
             }
         };
 
-        //TODO: ALL FOLLOWING COMMANDS MUST BE ADMIN ONLY
+        //test converting timezones
+        Command timeCommand = new Command("time", "converts current system time to another using the provided timezone code", new String[] {"!time now PST/ECT/BET/AET/JST","!time 09:00 PST"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                try
+                {
+                    //just return the current time for the provided timezone
+                    String timeToConvert = args[1].toLowerCase();
+                    String timeZone = args[2].toUpperCase();
+                    List<String> validZones = new ArrayList<>(ZoneId.SHORT_IDS.keySet());
 
-        //Stop command
-        Command stopCommand = new Command("stop", "Shuts down Chirp.", null, false)
+                    if (validZones.contains(timeZone))
+                    {
+                        if (timeToConvert.equals("now"))
+                        {
+                            ZoneId sourceZoneId = ZoneId.systemDefault();
+                            ZoneId destZoneId = ZoneId.of(timeZone, ZoneId.SHORT_IDS);
+                            BotUtils.SendMessage(event.getChannel(), TimeUtils.convertTime(destZoneId, ZonedDateTime.now(sourceZoneId)));
+                        } else
+                        {
+                            //check if provided timestamp is valid
+                            String pattern = "^([0-1][0-9]|2[0-3]|[0-9]):[0-5][0-9]";
+                            Pattern r = Pattern.compile(pattern);
+                            Matcher m = r.matcher(timeToConvert);
+                            if (m.find()) //is valid
+                            {
+                                ZoneId destZoneId = ZoneId.of(timeZone, ZoneId.SHORT_IDS);
+                                ZonedDateTime time = ZonedDateTime.now().withHour(Integer.parseInt(timeToConvert.substring(0, 2))).withMinute(Integer.parseInt(timeToConvert.substring(3)));
+                                BotUtils.SendMessage(event.getChannel(), TimeUtils.convertTime(destZoneId, time));
+                            } else
+                            {
+                                BotUtils.SendMessage(event.getChannel(), "You provided an invalid time, I can't convert it! Make sure the time is 24 hour time in format HH:MM.");
+                            }
+                        }
+                    } else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "You provided an invalid timezone, I can't find the time for that!");
+                    }
+                }
+                catch(Exception e)
+                {
+                    EmbedBuilder builder = new EmbedBuilder();
+
+                    builder.withAuthorName("Chirp Help");
+
+                    //flavour text with the information about the command
+                    builder.withTitle("You seemed to have used the time command incorrectly! I'm here to help - here's everything I know about time:");
+                    builder.appendField(commandName, description, false);
+                    builder.appendField("Example uses of " + (commandName), BotUtils.OutputUsage(commandName, commandMap), false);//output usages for the command
+
+                    BotUtils.SendEmbed(event.getChannel(), builder.build());
+                }
+            }
+        };
+
+        //list all the heroes command
+        //this will be used to test all the different fileio operations in the near future.
+        Command stopCommand = new Command("stop", "Exits the bot safely.", null, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -154,9 +214,6 @@ public class CommandHandler
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
-                //convert space separated list to commas
-                args = BotUtils.convertArgsToList(args);
-
                 //add the word to the file
                 BotUtils.AppendStrToFile("res/" + args[1] + ".txt", args[2]);
                 BotUtils.SendMessage(event.getChannel(), args[2] + " Added!");
@@ -167,6 +224,8 @@ public class CommandHandler
         commandMap.put(helpCommand.commandName, helpCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
         commandMap.put(mapCommand.commandName, mapCommand);
+
+        commandMap.put(timeCommand.commandName,timeCommand);
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(editFileCommand.commandName, editFileCommand);
 

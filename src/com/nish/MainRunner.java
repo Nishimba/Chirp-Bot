@@ -32,7 +32,7 @@ public class MainRunner
 
         //login the client
         cli.login();
-      
+
         //wait for the client to be logged in before polling what guilds the bot is in
         try
         {
