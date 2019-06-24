@@ -7,9 +7,8 @@ import sx.blah.discord.util.EmbedBuilder;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -143,30 +142,58 @@ public class CommandHandler
         };
 
         //test converting timezones
-        Command timeCommand = new Command("time", "converts current system time to another using the provided timezone code", new String[] {"!time now PST/ECT/BET/AET/JST","!time 9AM PST"}, true)
+        Command timeCommand = new Command("time", "converts current system time to another using the provided timezone code", new String[] {"!time now PST/ECT/BET/AET/JST","!time 09:00 PST"}, true)
         {
 
-            void Execute(MessageReceivedEvent event, String[] args) {
-                if (args[1].toLowerCase().equals("now")) { //just return the current time for the provided timezone
-                    ZoneId sourceZoneId = ZoneId.systemDefault();
-                    ZoneId destZoneId = ZoneId.of(args[2].toUpperCase(), ZoneId.SHORT_IDS);
-                    TimeUtils parser = new TimeUtils();
-                    System.out.println(sourceZoneId.toString() + " to: " + destZoneId.toString());
-                    BotUtils.SendMessage(event.getChannel(), parser.convertTime(sourceZoneId, destZoneId, ZonedDateTime.now(sourceZoneId)));
+            void Execute(MessageReceivedEvent event, String[] args)
+            {
+                try
+                {
+                    //just return the current time for the provided timezone
+                    String timeToConvert = args[1].toLowerCase();
+                    String timeZone = args[2].toUpperCase();
+                    List<String> validZones = new ArrayList<>(ZoneId.SHORT_IDS.keySet());
 
-//                }else{
-//                    //check if provided timestamp is valid
-//                    String pattern = "^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$";
-//                    Pattern r = Pattern.compile(pattern);
-//                    Matcher m = r.matcher(args[1]);
-//                    if (m.find()) //is valid
-//                    {
-//                        ZoneId sourceZoneId = ZoneId.systemDefault();
-//                        ZoneId destZoneId = ZoneId.of(args[2].toUpperCase(), ZoneId.SHORT_IDS);
-//                        TimeUtils parser = new TimeUtils();
-//                        System.out.println(sourceZoneId.toString() + " to: " + destZoneId.toString());
-//                        BotUtils.SendMessage(event.getChannel(), parser.convertTime(sourceZoneId, destZoneId, //timezone difference???);
-//                    }
+                    if (validZones.contains(timeZone))
+                    {
+                        if (timeToConvert.equals("now"))
+                        {
+                            ZoneId sourceZoneId = ZoneId.systemDefault();
+                            ZoneId destZoneId = ZoneId.of(timeZone, ZoneId.SHORT_IDS);
+                            BotUtils.SendMessage(event.getChannel(), TimeUtils.convertTime(destZoneId, ZonedDateTime.now(sourceZoneId)));
+                        } else
+                        {
+                            //check if provided timestamp is valid
+                            String pattern = "^([0-1][0-9]|2[0-3]|[0-9]):[0-5][0-9]";
+                            Pattern r = Pattern.compile(pattern);
+                            Matcher m = r.matcher(timeToConvert);
+                            if (m.find()) //is valid
+                            {
+                                ZoneId destZoneId = ZoneId.of(timeZone, ZoneId.SHORT_IDS);
+                                ZonedDateTime time = ZonedDateTime.now().withHour(Integer.parseInt(timeToConvert.substring(0, 2))).withMinute(Integer.parseInt(timeToConvert.substring(3)));
+                                BotUtils.SendMessage(event.getChannel(), TimeUtils.convertTime(destZoneId, time));
+                            } else
+                            {
+                                BotUtils.SendMessage(event.getChannel(), "You provided an invalid time, I can't convert it! Make sure the time is 24 hour time in format HH:MM.");
+                            }
+                        }
+                    } else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "You provided an invalid timezone, I can't find the time for that!");
+                    }
+                }
+                catch(Exception e)
+                {
+                    EmbedBuilder builder = new EmbedBuilder();
+
+                    builder.withAuthorName("Chirp Help");
+
+                    //flavour text with the information about the command
+                    builder.withTitle("You seemed to have used the time command incorrectly! I'm here to help - here's everything I know about time:");
+                    builder.appendField(commandName, description, false);
+                    builder.appendField("Example uses of " + (commandName), OutputUsage(commandName), false);//output usages for the command
+
+                    BotUtils.SendEmbed(event.getChannel(), builder.build());
                 }
             }
         };
