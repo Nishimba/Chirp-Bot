@@ -3,12 +3,10 @@ package com.dbase;
 import com.nish.BotUtils;
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
-import org.eclipse.jetty.client.api.Authentication;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.util.EmbedBuilder;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -35,10 +33,10 @@ public class LevelUtils
     private static int gifDelayTime = 0;
 
     //Level up barriers
-    public static double[] levelBarriers = new double[502];
+    private static double[] levelBarriers = new double[502];
 
     //Dictionary to store time of last msg for each user
-    static Map<IUser, Instant> lastMsg = new HashMap<>();
+    private static Map<IUser, Instant> lastMsg = new HashMap<>();
 
     LevelUtils(Connection conn, List<IGuild> guilds)
     {
@@ -136,7 +134,7 @@ public class LevelUtils
         levelBarriers[501] = Integer.MAX_VALUE;
     }
 
-    public static int getRank(IUser user, IGuild guild)
+    private static int getRank(IUser user, IGuild guild)
     {
         try
         {
@@ -157,7 +155,7 @@ public class LevelUtils
         }
     }
 
-    public static void updateRoles(IUser user, IGuild guild)
+    static void updateRoles(IUser user, IGuild guild)
     {
         try
         {
@@ -227,13 +225,13 @@ public class LevelUtils
         }
     }
 
-    public static void addRoleToDB(IRole role, IGuild guild, int level)
+    static void addRoleToDB(IRole role, IGuild guild, int level)
     {
         try
         {
             Statement createStmt = levelConn.createStatement();
 
-            String query = "INSERT IGNORE INTO roles_" + guild.getStringID() + " VALUES(" + role.getStringID() + ", " + level + ");";
+            String query = "INSERT INTO roles_" + guild.getStringID() + " VALUES(" + role.getStringID() + ", " + level + ") ON DUPLICATE KEY UPDATE LevelCutoff='" + level + "';";
 
             createStmt.execute(query);
         }
@@ -243,7 +241,7 @@ public class LevelUtils
         }
     }
 
-    public static void allocateXP(MessageReceivedEvent event)
+    static void allocateXP(MessageReceivedEvent event)
     {
         // Not a bot
         if (!event.getAuthor().isBot())
@@ -262,12 +260,12 @@ public class LevelUtils
                 Random rand = new Random();
                 int xpToAdd = rand.nextInt(11) + 15;
 
-                addXP((int)(xpToAdd * multiplier), event.getAuthor(), event.getGuild(), event);
+                addXP((int)(xpToAdd * multiplier), event.getAuthor(), event.getGuild());
             }
         }
     }
 
-    public static void addXP(int amount, IUser user, IGuild guild, MessageReceivedEvent event)
+    static void addXP(int amount, IUser user, IGuild guild)
     {
         try
         {
@@ -342,7 +340,7 @@ public class LevelUtils
         }
     }
 
-    public static int getCurrentXP(IUser user, IGuild guild)
+    static int getCurrentXP(IUser user, IGuild guild)
     {
         try
         {
@@ -370,7 +368,7 @@ public class LevelUtils
         }
     }
 
-    public static int getCurrentLevel(IUser user, IGuild guild)
+    static int getCurrentLevel(IUser user, IGuild guild)
     {
         try
         {
@@ -398,14 +396,14 @@ public class LevelUtils
         }
     }
 
-    public static int calculateCurrentLevel(IUser user, IGuild guild)
+    private static int calculateCurrentLevel(IUser user, IGuild guild)
     {
         int xp = getCurrentXP(user, guild);
         int level = 0;
 
-        for(int i = 0; i < levelBarriers.length; i++)
+        for (double levelBarrier : levelBarriers)
         {
-            if(xp >= (int)levelBarriers[i])
+            if (xp >= (int)levelBarrier)
             {
                 level++;
             }
@@ -413,7 +411,7 @@ public class LevelUtils
         return level;
     }
 
-    public static int xpRequiredForLevel(int targetLevel, IUser user, IGuild guild)
+    static int xpRequiredForLevel(int targetLevel, IUser user, IGuild guild)
     {
         if(targetLevel < 1)
         {
@@ -430,7 +428,7 @@ public class LevelUtils
         return xpNeeded - xp;
     }
 
-    public static int xpDiffForLevel(int level)
+    private static int xpDiffForLevel(int level)
     {
         int lowerXP = (int)levelBarriers[level - 1];
         int upperXP = (int)levelBarriers[level];
@@ -438,14 +436,14 @@ public class LevelUtils
         return upperXP - lowerXP;
     }
 
-    public static int xpProgress(int level, IUser user, IGuild guild)
+    private static int xpProgress(int level, IUser user, IGuild guild)
     {
         int lowerXP = (int)levelBarriers[level - 1];
 
         return getCurrentXP(user, guild) - lowerXP;
     }
 
-    public static boolean checkCooldown(MessageReceivedEvent event)
+    private static boolean checkCooldown(MessageReceivedEvent event)
     {
         Instant eventInstant = event.getMessage().getTimestamp();
         IUser user = event.getAuthor();
@@ -470,7 +468,7 @@ public class LevelUtils
         }
     }
 
-    public static void addMultiplier(IGuild guild, IRole role, double multiplier)
+    static void addMultiplier(IGuild guild, IRole role, double multiplier)
     {
         String guildID = guild.getStringID();
         String roleID = role.getStringID();
@@ -479,7 +477,7 @@ public class LevelUtils
         {
             Statement createStmt = levelConn.createStatement();
 
-            String addMulti = "INSERT IGNORE INTO multipliers_" + guildID + " (RoleID, XPMultiplier) VALUES (" + roleID + ", " + multiplier + ");";
+            String addMulti = "INSERT INTO multipliers_" + guildID + " (RoleID, XPMultiplier) VALUES (" + roleID + ", " + multiplier + ") ON DUPLICATE KEY UPDATE XPMultiplier='" + multiplier + "';";
 
             createStmt.execute(addMulti);
         }
@@ -489,28 +487,7 @@ public class LevelUtils
         }
     }
 
-    public static void changeMultiplier(IGuild guild, IRole role, double newMultiplier)
-    {
-        String guildID = guild.getStringID();
-        String roleID = role.getStringID();
-
-        try
-        {
-            Statement createStmt = levelConn.createStatement();
-
-            addMultiplier(guild, role, 1);
-
-            String changeMulti = "UPDATE multipliers_" + guildID + " SET XPMultiplier = " + newMultiplier + " WHERE RoleID=" + roleID + ";";
-
-            createStmt.execute(changeMulti);
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public static double getMultiplier(IGuild guild, IRole role)
+    static double getMultiplier(IGuild guild, IRole role)
     {
         String guildID = guild.getStringID();
 
@@ -538,7 +515,7 @@ public class LevelUtils
         }
     }
 
-    public static ResultSet topN(IGuild guild, int count)
+    static ResultSet topN(IGuild guild, int count)
     {
         String guildID = guild.getStringID();
 
@@ -548,9 +525,7 @@ public class LevelUtils
 
             String getTop = "SELECT * FROM levels_" + guildID + " ORDER BY XPAmount DESC LIMIT " + count + ";";
 
-            ResultSet results = createStmt.executeQuery(getTop);
-
-            return results;
+            return createStmt.executeQuery(getTop);
         }
         catch (SQLException e)
         {
@@ -559,13 +534,40 @@ public class LevelUtils
         }
     }
 
-    public static File createLeaderboardCard(MessageReceivedEvent event, IGuild guild, int count)
+    static File createLeaderboardCard(MessageReceivedEvent event, IGuild guild, int count)
     {
         File output;
 
         ResultSet results = topN(guild, count);
 
-        int height = 300 * count;
+        boolean userInSet = false;
+
+        if(results != null)
+        {
+            int i = 1;
+            try
+            {
+                while (results.next())
+                {
+                    if (results.getLong(i) == Long.parseLong(event.getAuthor().getStringID()))
+                    {
+                        userInSet = true;
+                    }
+                }
+                results.beforeFirst();
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        int height = (300 * count) + 300;
+
+        if (userInSet)
+        {
+            height -= 300;
+        }
 
         BufferedImage bigCard = new BufferedImage(1000, height, BufferedImage.TYPE_INT_ARGB);
 
@@ -577,13 +579,44 @@ public class LevelUtils
         try
         {
             int y = 0;
-            while(results.next())
+            if (results != null)
             {
-                IUser user = event.getClient().getUserByID(results.getLong(1));
-                File outputAvatar = getAvatar(user);
-                Image avatar = ImageIO.read(outputAvatar).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-                g.drawImage(drawRankCard(user, guild, avatar), 0, y, null);
-                y += 300;
+                while(results.next())
+                {
+                    IUser user = event.getClient().getUserByID(results.getLong(1));
+                    File outputAvatar = getAvatar(user);
+                    Image avatar;
+                    if (outputAvatar != null)
+                    {
+                        avatar = ImageIO.read(outputAvatar).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    g.drawImage(drawRankCard(user, guild, avatar), 0, y, null);
+                    y += 300;
+                }
+                if(!userInSet)
+                {
+
+                    IUser user = event.getClient().getUserByID(event.getAuthor().getLongID());
+                    File outputAvatar = getAvatar(user);
+                    Image avatar;
+                    if (outputAvatar != null)
+                    {
+                        avatar = ImageIO.read(outputAvatar).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    g.drawImage(drawRankCard(user, guild, avatar), 0, y, null);
+                }
+            }
+            else
+            {
+                return null;
             }
 
             g.setColor(new Color(10, 10, 11));
@@ -596,6 +629,10 @@ public class LevelUtils
             {
                 g.drawLine(0, lineY, 1000, lineY);
                 lineY+=300;
+            }
+            if(!userInSet)
+            {
+                g.drawLine(0, lineY, 1000, lineY);
             }
 
             // Construct image
@@ -610,7 +647,7 @@ public class LevelUtils
         }
     }
 
-    public static File getAvatar(IUser user)
+    private static File getAvatar(IUser user)
     {
         try
         {
@@ -664,7 +701,7 @@ public class LevelUtils
         }
     }
 
-    public static File createRankCard(IUser user, IGuild guild)
+    static File createRankCard(IUser user, IGuild guild)
     {
         try
         {
@@ -672,30 +709,37 @@ public class LevelUtils
             BufferedImage card;
             File outputAvatar = getAvatar(user);
 
-            if(outputAvatar.getCanonicalPath().substring(outputAvatar.getCanonicalPath().length() - 3).equals("png"))
+            if (outputAvatar != null)
             {
-                Image avatar = ImageIO.read(outputAvatar).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+                if(outputAvatar.getCanonicalPath().substring(outputAvatar.getCanonicalPath().length() - 3).equals("png"))
+                {
+                    Image avatar = ImageIO.read(outputAvatar).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
 
-                card = drawRankCard(user, guild, avatar);
+                    card = drawRankCard(user, guild, avatar);
 
-                // Construct image
-                output = new File("res/card.png");
-                ImageIO.write(card, "png", output);
-                return output;
+                    // Construct image
+                    output = new File("res/card.png");
+                    ImageIO.write(card, "png", output);
+                    return output;
+                }
+                else
+                {
+                    ArrayList<BufferedImage> gifFrames = getFrames(outputAvatar);
+                    ArrayList<BufferedImage> cardGif = new ArrayList<>();
+                    for(Image i : gifFrames)
+                    {
+                        cardGif.add(drawRankCard(user, guild, i));
+                    }
+
+                    output = makeGif(cardGif);
+
+                    // Construct image
+                    return output;
+                }
             }
             else
             {
-                ArrayList<BufferedImage> gifFrames = getFrames(outputAvatar);
-                ArrayList<BufferedImage> cardGif = new ArrayList<>();
-                for(Image i : gifFrames)
-                {
-                    cardGif.add(drawRankCard(user, guild, i));
-                }
-
-                output = makeGif(cardGif);
-
-                // Construct image
-                return output;
+                return null;
             }
 
         }
@@ -706,7 +750,7 @@ public class LevelUtils
         }
     }
 
-    public static BufferedImage drawRankCard(IUser user, IGuild guild, Image img) throws IOException
+    private static BufferedImage drawRankCard(IUser user, IGuild guild, Image img) throws IOException
     {
         int imageWidth = 1000;
         int imageHeight = 300;
@@ -1041,7 +1085,7 @@ public class LevelUtils
         return image;
     }
 
-    public static ArrayList<BufferedImage> getFrames(File gif) throws IOException
+    private static ArrayList<BufferedImage> getFrames(File gif) throws IOException
     {
         ArrayList<BufferedImage> frames = new ArrayList<>();
 
@@ -1064,7 +1108,7 @@ public class LevelUtils
         return frames;
     }
 
-    public static File makeGif(ArrayList<BufferedImage> frames) throws IOException
+    private static File makeGif(ArrayList<BufferedImage> frames) throws IOException
     {
         File outputFile = new File("res/card.gif");
 

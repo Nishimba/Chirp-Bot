@@ -5,7 +5,6 @@ import com.nish.Command;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.util.EmbedBuilder;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -68,7 +67,7 @@ public class LevelCommands
             {
                 try
                 {
-                    LevelUtils.addXP(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild(), event);
+                    LevelUtils.addXP(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s XP was modified to " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()));
                 }
@@ -91,7 +90,7 @@ public class LevelCommands
 
                     int xpRequired = LevelUtils.xpRequiredForLevel(targetLevel, event.getMessage().getMentions().get(0), event.getGuild());
 
-                    LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild(), event);
+                    LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s level was modified to " + LevelUtils.getCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild()));
                 }
@@ -112,7 +111,7 @@ public class LevelCommands
                     int currentXP = LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild());
                     int targetXP = Integer.parseInt(args[1]);
                     int diff = targetXP - currentXP;
-                    LevelUtils.addXP(diff, event.getMessage().getMentions().get(0), event.getGuild(), event);
+                    LevelUtils.addXP(diff, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s XP was set to " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()));
                 }
@@ -132,7 +131,7 @@ public class LevelCommands
                 {
                     int xpRequired = LevelUtils.xpRequiredForLevel(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild());
 
-                    LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild(), event);
+                    LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s level was set to " + LevelUtils.getCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild()));
                 }
@@ -149,7 +148,7 @@ public class LevelCommands
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try {
-                    LevelUtils.changeMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]));
+                    LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]));
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
                 }
                 catch (Exception e)
@@ -171,7 +170,7 @@ public class LevelCommands
             }
         };
 
-        Command top10Command = new Command("top10", "Outputs the top 10 users on the server", new String[]{"~top10"}, false)
+        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -181,9 +180,12 @@ public class LevelCommands
 
                 try
                 {
-                    while(results.next())
+                    if (results != null)
                     {
-                        i++;
+                        while(results.next())
+                        {
+                            i++;
+                        }
                     }
                 }
                 catch (SQLException e)
