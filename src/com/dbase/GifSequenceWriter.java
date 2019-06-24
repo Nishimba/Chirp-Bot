@@ -18,11 +18,11 @@ import java.awt.image.*;
 import java.io.*;
 import java.util.Iterator;
 
-public class GifSequenceWriter
+class GifSequenceWriter
 {
-    protected ImageWriter gifWriter;
-    protected ImageWriteParam imageWriteParam;
-    protected IIOMetadata imageMetaData;
+    private ImageWriter gifWriter;
+    private ImageWriteParam imageWriteParam;
+    private IIOMetadata imageMetaData;
 
     /**
      * Creates a new GifSequenceWriter
@@ -34,7 +34,7 @@ public class GifSequenceWriter
      * @throws IIOException if no gif ImageWriters are found
      * @author Elliot Kroo (elliot[at]kroo[dot]net)
      */
-    public GifSequenceWriter(ImageOutputStream outputStream, int imageType, int timeBetweenFramesMS, boolean loopContinuously) throws IIOException, IOException
+    GifSequenceWriter(ImageOutputStream outputStream, int imageType, int timeBetweenFramesMS, boolean loopContinuously) throws IOException
     {
         // my method to create a writer
         gifWriter = getWriter();
@@ -77,7 +77,7 @@ public class GifSequenceWriter
         gifWriter.prepareWriteSequence(null);
     }
 
-    public void writeToSequence(RenderedImage img) throws IOException
+    void writeToSequence(RenderedImage img) throws IOException
     {
         gifWriter.writeToSequence(new IIOImage(img, null, imageMetaData), imageWriteParam);
     }
@@ -86,7 +86,7 @@ public class GifSequenceWriter
      * Close this GifSequenceWriter object. This does not close the underlying
      * stream, just finishes off the GIF.
      */
-    public void close() throws IOException
+    void close() throws IOException
     {
         gifWriter.endWriteSequence();
     }

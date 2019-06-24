@@ -244,7 +244,7 @@ public class LevelUtils
     static void allocateXP(MessageReceivedEvent event)
     {
         // Not a bot
-        if (!event.getAuthor().isBot())
+        if (!event.getAuthor().isBot() && !event.getMessage().getContent().substring(0, 1).equals(BotUtils.BOT_PREFIX))
         {
             // Check if 1min has passed since last msg
             if(checkCooldown(event))

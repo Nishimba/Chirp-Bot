@@ -5,16 +5,15 @@ import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+
 
 /*
  * Created by Nishimba & Daalekz on 06/01/19
@@ -24,7 +23,7 @@ import java.util.*;
 public class BotUtils
 {
     //Prefix for commands
-    static String BOT_PREFIX = "~";
+    public static String BOT_PREFIX = "~";
 
     //Create the client to connect to the server
     static IDiscordClient getBuiltDiscordClient(String token)
