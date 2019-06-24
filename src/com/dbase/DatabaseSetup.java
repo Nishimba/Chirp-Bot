@@ -17,25 +17,20 @@ public class DatabaseSetup
     {
         try
         {
+            //uses login details to create the connection
             List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
-            new LevelUtils(conn, guilds);
-            Statement createStmt = conn.createStatement();
-
-            createStmt.executeQuery("USE discord");
-
-            for (IGuild guild:guilds)
+            if (login != null)
             {
-                String guildID = guild.getStringID();
-                String createServerTable = "CREATE TABLE IF NOT EXISTS Server_" + guildID + "(" +
-                        "UserID BIGINT NOT NULL," +
-                        "Level INT NOT NULL," +
-                        "XPAmount int NOT NULL," +
-                        "TimeStamp DATETIME," +
-                        "XPMultiplier DOUBLE," +
-                        "PRIMARY KEY(UserID));";
+                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
 
-                createStmt.execute(createServerTable);
+                //creates the vod and level utilities
+                new LevelUtils(conn, guilds);
+                new VODUtils(conn, guilds);
+            }
+            else
+            {
+                System.out.println("Login information for database could not be found, shutting down.");
+                System.exit(0);
             }
         }
         catch (SQLException ex)

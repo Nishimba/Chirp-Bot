@@ -7,7 +7,7 @@ Junkertown
 Rialto
 Route 66
 Watchpoint: Gibraltar
-Blizzard world
+Blizzard World
 Eichenwalde
 Hollywood
 King's Row
@@ -17,3 +17,5 @@ Ilios
 Lijang Tower
 Nepal
 Oasis
+Paris
+Havana
