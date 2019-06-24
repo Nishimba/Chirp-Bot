@@ -1,8 +1,12 @@
 package com.nish;
 
+import com.dbase.LevelCommands;
 import com.dbase.VODCommands;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.time.ZoneId;
@@ -20,7 +24,7 @@ import java.util.TreeMap;
  * Handles the creation and execution of commands
  */
 
-public class CommandHandler
+class CommandHandler
 {
     //Hashmap to contain all commands indexed by their name
     private HashMap<String, Command> commandMap;
@@ -199,8 +203,82 @@ public class CommandHandler
             }
         };
 
-        //list all the heroes command
-        //this will be used to test all the different fileio operations in the near future.
+        Command markdownCommand = new Command("markdown", "List the default markdown options", new String[] {"~markdown"},false)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                //Create an embed
+                EmbedBuilder builder = new EmbedBuilder();
+
+                // ive never escaped so many escapes in my life smile
+                builder.withAuthorName("Markdown");
+                builder.withTitle("Here's all the markdown options that discord provides:");
+                builder.appendField("*Italics*", "\\*italics\\* or \\_italics\\_", false);
+                builder.appendField("**Bold**", "\\*\\*bold\\*\\*", false);
+                builder.appendField("***Bold Italics***", "\\*\\*\\*bold italics\\*\\*\\*", false);
+                builder.appendField("__Underline__", "\\_\\_underline\\_\\_", false);
+                builder.appendField("__*Underline Italics*__", "\\_\\_\\*underline italics\\*\\_\\_", false);
+                builder.appendField("__**Underline Bold**__", "\\_\\_\\*\\*underline bold\\*\\*\\_\\_", false);
+                builder.appendField("__***Underline Bold Italics***__", "\\_\\_\\*\\*\\*underline bold italics\\*\\*\\*\\_\\_", false);
+                builder.appendField("~~Strikethrough~~", "\\~\\~strikethrough\\~\\~", false);
+                builder.appendField("||Spoiler||", "\\|\\|spoiler\\|\\|", false);
+
+                builder.appendField("The official discord documentation on markdown can be found here:", "https://support.discordapp.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-", false);
+
+                BotUtils.SendEmbed(event.getChannel(), builder.build());
+            }
+        };
+
+        Command countCommand = new Command("count", "Counts", new String[] {"~count string"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                IMessage message = event.getChannel().sendMessage("Working on it!");
+                String stringToMatch = "";
+                for (int i = 1; i < args.length; i++)
+                {
+                    stringToMatch += args[i];
+                    stringToMatch += " ";
+                }
+                stringToMatch = stringToMatch.trim();
+
+                List<IMessage> history = new ArrayList<>();
+                for (IChannel chan : event.getGuild().getChannels())
+                {
+                    for (IMessage msg : chan.getFullMessageHistory().asArray())
+                    {
+                        history.add(msg);
+                    }
+                }
+
+                Map<IUser, Integer> count = new HashMap<>();
+
+                for (IMessage m : history)
+                {
+                    if (m.getContent().toLowerCase().contains(stringToMatch.toLowerCase()))
+                    {
+                        if (count.putIfAbsent(m.getAuthor(), 1) != null)
+                        {
+                            count.replace(m.getAuthor(), count.get(m.getAuthor()) + 1);
+                        }
+                    }
+                }
+
+                Map.Entry<IUser, Integer> highestCount = null;
+                for (Map.Entry<IUser, Integer> entry : count.entrySet())
+                {
+                    if (highestCount == null)
+                    {
+                        highestCount = entry;
+                    } else if (entry.getValue() > highestCount.getValue())
+                    {
+                        highestCount = entry;
+                    }
+                }
+                message.edit(highestCount.getKey().getName() + " has said *" + stringToMatch + "* the most times, with " + highestCount.getValue() + " occurrences");
+            }
+        };
+
         Command stopCommand = new Command("stop", "Exits the bot safely.", null, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
@@ -224,12 +302,15 @@ public class CommandHandler
         commandMap.put(helpCommand.commandName, helpCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
         commandMap.put(mapCommand.commandName, mapCommand);
+        commandMap.put(markdownCommand.commandName, markdownCommand);
 
         commandMap.put(timeCommand.commandName,timeCommand);
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(editFileCommand.commandName, editFileCommand);
+        commandMap.put(countCommand.commandName, countCommand);
 
         new VODCommands(commandMap);
+        new LevelCommands(commandMap);
     }
 
     //execute the command when the appropriate command is typed
@@ -252,7 +333,7 @@ public class CommandHandler
                 Command toExecute = commandMap.get(commandName);
 
                 //this is now a valid command!
-                if(toExecute.takesArgs && commandArgs.length == 1 && toExecute.commandName.equals("help"))
+                if(toExecute.takesArgs && commandArgs.length == 1 && (toExecute.commandName.equals("help") || toExecute.commandName.equals("rank")))
                 {
                     toExecute.Execute(event, commandArgs);
                 }
@@ -267,7 +348,7 @@ public class CommandHandler
 
                 //if the command is a command, but it has been used incorrectly, provide help
                 //if the command isn't "Help", it definitely needs to be longer if it's supposed to take arguments.
-                if(!toExecute.takesArgs && commandArgs.length > 1 || (toExecute.takesArgs && commandArgs.length == 1 && !toExecute.commandName.equals("help")))
+                if(!toExecute.takesArgs && commandArgs.length > 1 || (toExecute.takesArgs && commandArgs.length == 1 && !(toExecute.commandName.equals("help") || toExecute.commandName.equals("rank"))))
                 {
                     EmbedBuilder builder = new EmbedBuilder();
 
