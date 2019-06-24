@@ -90,3 +90,4 @@ fabric.properties
 res/BotToken.txt
 res/APIKEY.txt
 res/DBConfig.txt
+out/
