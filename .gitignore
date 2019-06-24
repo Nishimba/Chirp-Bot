@@ -89,3 +89,4 @@ fabric.properties
 #Tokens and keys
 res/BotToken.txt
 res/APIKEY.txt
+out/
