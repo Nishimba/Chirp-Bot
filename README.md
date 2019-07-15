@@ -2,7 +2,7 @@
 Overwatch VOD and Levelling Bot for Discord in Java
 
 ## Raspberry Pi Login Information
-IP Address: 58.172.220.220:5900  
+IP Address: vodbotpi.myvnc.com  
 Username: pi  
 Password: vodbotpi  
 
