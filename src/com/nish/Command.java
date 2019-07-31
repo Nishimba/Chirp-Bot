@@ -12,15 +12,17 @@ public abstract class Command
     String[] usages;//the ways that the command can be used
     protected String description;//the general description of the command
     public String commandName;//the name of the command. What it is called using.
-	  boolean takesArgs;//whether or not the command takes arguments
+    boolean takesArgs;//whether or not the command takes arguments
+    boolean isAdmin;
 
     //initiates the command
-    protected Command(String name, String desc, String[] usage, boolean args)
+    protected Command(String name, String desc, String[] usage, boolean args, boolean admin)
     {
+        isAdmin = admin;
         description = desc;
         commandName = name;
         usages = usage;
-		    takesArgs = args;
+        takesArgs = args;
     }
 
     //execution to be filled in when creating a command, returns a boolean when executes properly

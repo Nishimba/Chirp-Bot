@@ -32,7 +32,7 @@ public class LevelCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank"}, true)
+        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank"}, true, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -61,7 +61,7 @@ public class LevelCommands
             }
         };
 
-        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyXP amount @mention"}, true)
+        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyXP amount @mention"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -79,7 +79,7 @@ public class LevelCommands
             }
         };
 
-        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifyLevel amount @mention"}, true)
+        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifyLevel amount @mention"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -102,7 +102,7 @@ public class LevelCommands
             }
         };
 
-        Command setXPCommand = new Command("setXP", "Set users XP", new String[]{"~setXP amount @mention"}, true)
+        Command setXPCommand = new Command("setXP", "Set users XP", new String[]{"~setXP amount @mention"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -123,7 +123,7 @@ public class LevelCommands
             }
         };
 
-        Command setLevelCommand = new Command("setLevel", "Set users level", new String[]{"~setLevel amount @mention"}, true)
+        Command setLevelCommand = new Command("setLevel", "Set users level", new String[]{"~setLevel amount @mention"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -143,7 +143,7 @@ public class LevelCommands
             }
         };
 
-        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role"}, true)
+        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -159,7 +159,7 @@ public class LevelCommands
             }
         };
 
-        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addLevelRole @role level"}, true)
+        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addLevelRole @role level"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -170,7 +170,7 @@ public class LevelCommands
             }
         };
 
-        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false)
+        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {

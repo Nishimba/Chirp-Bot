@@ -17,7 +17,7 @@ public class VODCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command addVodCommand = new Command("addvod", "Adds a VOD to the database.", new String[]{"~addvod [SR], [Hero], [Map], [YT Link]"}, true)
+        Command addVodCommand = new Command("addvod", "Adds a VOD to the database.", new String[]{"~addvod [SR], [Hero], [Map], [YT Link]"}, true, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -51,7 +51,7 @@ public class VODCommands
             }
         };
 
-        Command delVodCommand = new Command("deletevod", "Removes a VOD from the database.", new String[]{"~deletevod ID"}, true)
+        Command delVodCommand = new Command("deletevod", "Removes a VOD from the database.", new String[]{"~deletevod ID"}, true, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -74,7 +74,7 @@ public class VODCommands
             }
         };
 
-        Command getVodCommand = new Command("getvod", "Gets information for a VOD.", new String[]{"~getvod ID"}, true)
+        Command getVodCommand = new Command("getvod", "Gets information for a VOD.", new String[]{"~getvod ID"}, true, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
