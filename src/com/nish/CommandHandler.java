@@ -7,6 +7,7 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.time.ZoneId;
@@ -40,7 +41,7 @@ class CommandHandler
     private void InitiateCommands()
     {
         //The help command
-        Command helpCommand = new Command("help", "A help command showing how to use Chirp.", new String[] {"~help", "~help [command]"},true)
+        Command helpCommand = new Command("help", "A help command showing how to use Chirp.", new String[] {"~help", "~help [command]"},true, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -56,8 +57,16 @@ class CommandHandler
                 {
                     //alphabetise help
                     Map<String, Command> map = new TreeMap<>(commandMap);
-                    for (Map.Entry<String, Command> command : map.entrySet()) {
-                        builder.appendField(command.getValue().commandName, command.getValue().description, false);
+                    for (Map.Entry<String, Command> command : map.entrySet())
+                    {
+                        if(command.getValue().isAdmin && event.getAuthor().getPermissionsForGuild(event.getGuild()).contains(Permissions.ADMINISTRATOR))
+                        {
+                            builder.appendField(command.getValue().commandName, command.getValue().description, false);
+                        }
+                        else if (!command.getValue().isAdmin)
+                        {
+                            builder.appendField(command.getValue().commandName, command.getValue().description, false);
+                        }
                     }
 
                     //send the embed
@@ -90,7 +99,7 @@ class CommandHandler
         };
 
         //Lists the heroes
-        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"~heroes"},false)
+        Command heroCommand = new Command("heroes", "List all the heroes in Overwatch!", new String[] {"~heroes"},false, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -119,7 +128,7 @@ class CommandHandler
         };
 
         //Lists the heroes
-        Command mapCommand = new Command("maps", "List all the maps in Overwatch!", new String[] {"~maps"},false)
+        Command mapCommand = new Command("maps", "List all the maps in Overwatch!", new String[] {"~maps"},false, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -148,7 +157,7 @@ class CommandHandler
         };
 
         //test converting timezones
-        Command timeCommand = new Command("time", "converts current system time to another using the provided timezone code", new String[] {"!time now PST/ECT/BET/AET/JST","!time 09:00 PST"}, true)
+        Command timeCommand = new Command("time", "converts current system time to another using the provided timezone code", new String[] {"!time now PST/ECT/BET/AET/JST","!time 09:00 PST"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -203,7 +212,7 @@ class CommandHandler
             }
         };
 
-        Command markdownCommand = new Command("markdown", "List the default markdown options", new String[] {"~markdown"},false)
+        Command markdownCommand = new Command("markdown", "List the default markdown options", new String[] {"~markdown"},false,false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -229,7 +238,7 @@ class CommandHandler
             }
         };
 
-        Command countCommand = new Command("count", "Counts", new String[] {"~count string"}, true)
+        Command countCommand = new Command("count", "Counts", new String[] {"~count string"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -279,7 +288,7 @@ class CommandHandler
             }
         };
 
-        Command stopCommand = new Command("stop", "Exits the bot safely.", null, false)
+        Command stopCommand = new Command("stop", "Exits the bot safely.", null, false, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -288,7 +297,7 @@ class CommandHandler
         };
 
         //edits a file that is passed in, used for the editing of
-        Command editFileCommand = new Command("editFile", "Appends a text file with the string provided.", new String[]{"~editFile [fileName], [content]"}, true)
+        Command editFileCommand = new Command("editFile", "Appends a text file with the string provided.", new String[]{"~editFile [fileName], [content]"}, true, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -333,33 +342,40 @@ class CommandHandler
                 Command toExecute = commandMap.get(commandName);
 
                 //this is now a valid command!
-                if(toExecute.takesArgs && commandArgs.length == 1 && (toExecute.commandName.equals("help") || toExecute.commandName.equals("rank")))
+                if(toExecute.isAdmin && !event.getAuthor().getPermissionsForGuild(event.getGuild()).contains(Permissions.ADMINISTRATOR))
                 {
-                    toExecute.Execute(event, commandArgs);
+                    BotUtils.SendMessage(event.getChannel(), "You do not have permission to do that!");
                 }
-                if(toExecute.takesArgs && commandArgs.length > 1)
+                else
                 {
-                    toExecute.Execute(event, commandArgs);
-                }
-                if(!toExecute.takesArgs && commandArgs.length == 1)
-                {
-                    toExecute.Execute(event, null);
-                }
+                    if(toExecute.takesArgs && commandArgs.length == 1 && (toExecute.commandName.equals("help") || toExecute.commandName.equals("rank")))
+                    {
+                        toExecute.Execute(event, commandArgs);
+                    }
+                    if(toExecute.takesArgs && commandArgs.length > 1)
+                    {
+                        toExecute.Execute(event, commandArgs);
+                    }
+                    if(!toExecute.takesArgs && commandArgs.length == 1)
+                    {
+                        toExecute.Execute(event, null);
+                    }
 
-                //if the command is a command, but it has been used incorrectly, provide help
-                //if the command isn't "Help", it definitely needs to be longer if it's supposed to take arguments.
-                if(!toExecute.takesArgs && commandArgs.length > 1 || (toExecute.takesArgs && commandArgs.length == 1 && !(toExecute.commandName.equals("help") || toExecute.commandName.equals("rank"))))
-                {
-                    EmbedBuilder builder = new EmbedBuilder();
+                    //if the command is a command, but it has been used incorrectly, provide help
+                    //if the command isn't "Help", it definitely needs to be longer if it's supposed to take arguments.
+                    if(!toExecute.takesArgs && commandArgs.length > 1 || (toExecute.takesArgs && commandArgs.length == 1 && !(toExecute.commandName.equals("help") || toExecute.commandName.equals("rank"))))
+                    {
+                        EmbedBuilder builder = new EmbedBuilder();
 
-                    builder.withAuthorName("Chirp Help");
+                        builder.withAuthorName("Chirp Help");
 
-                    //flavour text with the information about the command
-                    builder.withTitle("You seemed to have used the " + (toExecute.commandName) + " command incorrectly! I'm here to help - here's everything I know about " + toExecute.commandName + ":");
-                    builder.appendField(toExecute.commandName, toExecute.description, false);
-                    builder.appendField("Example uses of " + (toExecute.commandName), BotUtils.OutputUsage(toExecute.commandName, commandMap), false);//output usages for the command
+                        //flavour text with the information about the command
+                        builder.withTitle("You seemed to have used the " + (toExecute.commandName) + " command incorrectly! I'm here to help - here's everything I know about " + toExecute.commandName + ":");
+                        builder.appendField(toExecute.commandName, toExecute.description, false);
+                        builder.appendField("Example uses of " + (toExecute.commandName), BotUtils.OutputUsage(toExecute.commandName, commandMap), false);//output usages for the command
 
-                    BotUtils.SendEmbed(event.getChannel(), builder.build());
+                        BotUtils.SendEmbed(event.getChannel(), builder.build());
+                    }
                 }
             }
             else if (messageContent.startsWith(BotUtils.BOT_PREFIX) && !commandArgs[0].substring(1).isEmpty())//if the command has a prefix but isnt a registered command
