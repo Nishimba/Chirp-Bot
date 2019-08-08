@@ -1,5 +1,5 @@
 # D.Vod
-Overwatch VOD and Levelling Bot for Discord in Java
+Overwatch VOD and Levelling Bot for Discord in Java [![forthebadge](https://forthebadge.com/images/badges/gluten-free.svg)](https://forthebadge.com)
 
 ## Raspberry Pi Login Information
 IP Address: vodbotpi.myvnc.com  
