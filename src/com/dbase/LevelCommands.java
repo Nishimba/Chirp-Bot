@@ -5,6 +5,7 @@ import com.nish.Command;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.IUser;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -143,12 +144,20 @@ public class LevelCommands
             }
         };
 
-        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role"}, true)
+        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role [motm bool]"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try {
-                    LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]));
+                    if (args.length == 3)
+                    {
+                        LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]), false);
+                    }
+                    else
+                    {
+                        LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]), true);
+                    }
+
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
                 }
                 catch (Exception e)
@@ -170,30 +179,63 @@ public class LevelCommands
             }
         };
 
-        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false)
+        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false) {
+            public void Execute(MessageReceivedEvent event, String[] args) {
+                ResultSet results = LevelUtils.topN(event.getGuild(), 10);
+
+                int i = 0;
+
+                try {
+                    if (results != null) {
+                        while (results.next()) {
+                            i++;
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                BotUtils.SendFile(event.getChannel(), LevelUtils.createLeaderboardCard(event, event.getGuild(), i));
+            }
+        };
+
+        Command motmRoll = new Command("motmroll", "Rolls for a new member of the month based on the top 25 users in the leaderboard.", new String[]{"~motmroll"}, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
-                ResultSet results = LevelUtils.topN(event.getGuild(), 10);
+                //Generate top 25 Users and store them.
+                ResultSet top25Users = LevelUtils.topN(event.getGuild(), 25);
 
                 int i = 0;
 
                 try
                 {
-                    if (results != null)
+                    if (top25Users != null)
                     {
-                        while(results.next())
+                        while(top25Users.next())
                         {
                             i++;
                         }
+
+                        top25Users.beforeFirst(); //Put the pointer of the set to before the first index
+                        //i is now equal to the amount of users in the top 25 list (just in-case there isn't 25 people in the leaderboards bc dead server lol)
+                        //Time to pick a WINNER!
+                        double rankIndex = LevelUtils.getRandomIntegerBetweenRange(1, i);
+                        for(int j = 0; j < rankIndex; j++)
+                        {
+                            top25Users.next();
+                        }
+
+                        IUser winningUser = event.getGuild().getUserByID(top25Users.getLong(1)); //Gets the user from the randomly generated winning index
+                        //winningUser.addRole(LevelUtils.selectMOTMRole(event.getGuild())); //TODO: Add this back later.
+
+                        BotUtils.SendMessage(event.getChannel(), winningUser.mention() + " was drawn as the winner of MOTM!");
                     }
                 }
                 catch (SQLException e)
                 {
                     e.printStackTrace();
                 }
-
-                BotUtils.SendFile(event.getChannel(), LevelUtils.createLeaderboardCard(event, event.getGuild(), i));
             }
         };
 
@@ -205,5 +247,6 @@ public class LevelCommands
         commandMap.put(changeMultiplierCommand.commandName, changeMultiplierCommand);
         commandMap.put(addLevelCutoffCommand.commandName, addLevelCutoffCommand);
         commandMap.put(top10Command.commandName, top10Command);
+        commandMap.put(motmRoll.commandName, motmRoll);
     }
 }
