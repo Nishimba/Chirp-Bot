@@ -4,9 +4,11 @@ import com.nish.BotUtils;
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.util.EmbedBuilder;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -17,10 +19,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
@@ -83,6 +82,7 @@ public class LevelUtils
                 String createMultipliersTable = "CREATE TABLE IF NOT EXISTS multipliers_" + guildID + "(" +
                         "RoleID BIGINT NOT NULL," +
                         "XPMultiplier DOUBLE," +
+                        "IsMOTM BOOLEAN DEFAULT FALSE," +
                         "PRIMARY KEY(RoleID));";
 
                 createStmt.execute(createMultipliersTable);
@@ -250,17 +250,17 @@ public class LevelUtils
             if(checkCooldown(event))
             {
                 // Get Multipliers for user
-                double multiplier = 1.0;
+                double totalMultiplier = 1.0;
                 for(IRole role : event.getAuthor().getRolesForGuild(event.getGuild()))
                 {
-                    multiplier *= getMultiplier(event.getGuild(), role);
+                    totalMultiplier *= getMultiplier(event.getGuild(), role);
                 }
 
                 // Add random XP (15 - 25) by multipliers
                 Random rand = new Random();
                 int xpToAdd = rand.nextInt(11) + 15;
 
-                addXP((int)(xpToAdd * multiplier), event.getAuthor(), event.getGuild());
+                addXP((int)(xpToAdd * totalMultiplier), event.getAuthor(), event.getGuild());
             }
         }
     }
@@ -468,7 +468,7 @@ public class LevelUtils
         }
     }
 
-    static void addMultiplier(IGuild guild, IRole role, double multiplier)
+    static void addMultiplier(IGuild guild, IRole role, double multiplier, boolean motm)
     {
         String guildID = guild.getStringID();
         String roleID = role.getStringID();
@@ -476,8 +476,16 @@ public class LevelUtils
         try
         {
             Statement createStmt = levelConn.createStatement();
+            String addMulti;
 
-            String addMulti = "INSERT INTO multipliers_" + guildID + " (RoleID, XPMultiplier) VALUES (" + roleID + ", " + multiplier + ") ON DUPLICATE KEY UPDATE XPMultiplier='" + multiplier + "';";
+            if (!motm)
+            {
+                addMulti = "INSERT INTO multipliers_" + guildID + " (RoleID, XPMultiplier) VALUES (" + roleID + ", " + multiplier + ") ON DUPLICATE KEY UPDATE XPMultiplier='" + multiplier + "';";
+            }
+            else
+            {
+                addMulti = "INSERT INTO multipliers_" + guildID + " VALUES (" + roleID + ", " + multiplier + ", TRUE) ON DUPLICATE KEY UPDATE XPMultiplier='" + multiplier + "';";
+            }
 
             createStmt.execute(addMulti);
         }
@@ -788,29 +796,29 @@ public class LevelUtils
         String fontName = "";
 
         BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = image.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Graphics2D rankGraphic = image.createGraphics();
+        rankGraphic.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Background
-        g.setColor(backgroundColor);
-        g.fillRoundRect(0, 0, imageWidth, imageHeight, 10, 10);
+        rankGraphic.setColor(backgroundColor);
+        rankGraphic.fillRoundRect(0, 0, imageWidth, imageHeight, 10, 10);
 
         // Avatar
-        g.drawImage(img, 50, 50, null);
+        rankGraphic.drawImage(img, 50, 50, null);
 
         // Make Avatar Circle
-        g.setColor(backgroundColor);
-        g.setStroke(new BasicStroke(50));
-        g.drawOval(25, 25, 250, 250);
+        rankGraphic.setColor(backgroundColor);
+        rankGraphic.setStroke(new BasicStroke(50));
+        rankGraphic.drawOval(25, 25, 250, 250);
 
         // Outline Avatar
-        g.setStroke(new BasicStroke(6));
-        g.setColor(outlineColor);
-        g.drawOval(47, 47, 206, 206);
+        rankGraphic.setStroke(new BasicStroke(6));
+        rankGraphic.setColor(outlineColor);
+        rankGraphic.drawOval(47, 47, 206, 206);
 
         // XP
-        g.setColor(secondTextColor);
-        g.setFont(new Font(fontName, Font.PLAIN, 30));
+        rankGraphic.setColor(secondTextColor);
+        rankGraphic.setFont(new Font(fontName, Font.PLAIN, 30));
         String xpString = "";
         if(xpProg > 1000)
         {
@@ -834,15 +842,15 @@ public class LevelUtils
         {
             xpString = "MAXED";
         }
-        int xXP = 930 - g.getFontMetrics().stringWidth(xpString);
-        g.drawString(xpString, xXP, 180);
+        int xXP = 930 - rankGraphic.getFontMetrics().stringWidth(xpString);
+        rankGraphic.drawString(xpString, xXP, 180);
 
         // Username
-        g.setColor(textColor);
+        rankGraphic.setColor(textColor);
         String username = user.getName();
         int fontSize = 70;
         boolean shortenName = false;
-        while(310 + g.getFontMetrics(new Font(fontName, Font.PLAIN, 35)).stringWidth("#0000") + g.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) > xXP)
+        while(310 + rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, 35)).stringWidth("#0000") + rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) > xXP)
         {
             if (fontSize > 35)
             {
@@ -862,13 +870,13 @@ public class LevelUtils
                 username += "...";
             }
         }
-        g.setFont(new Font(fontName, Font.PLAIN, fontSize));
-        g.drawString(username, 300, 180);
+        rankGraphic.setFont(new Font(fontName, Font.PLAIN, fontSize));
+        rankGraphic.drawString(username, 300, 180);
 
         // Discriminator
-        g.setColor(secondTextColor);
-        g.setFont(new Font(fontName, Font.PLAIN, 35));
-        g.drawString("#" + user.getDiscriminator(), g.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) + 310, 180);
+        rankGraphic.setColor(secondTextColor);
+        rankGraphic.setFont(new Font(fontName, Font.PLAIN, 35));
+        rankGraphic.drawString("#" + user.getDiscriminator(), rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) + 310, 180);
 
         // Level
         int tempLevel = userLevel%100;
@@ -881,40 +889,40 @@ public class LevelUtils
             tempLevel = 500;
         }
 
-        g.setColor(highlightColor);
-        g.setFont(new Font(fontName, Font.PLAIN, 30));
-        int xLevel = 930 - (g.getFontMetrics().stringWidth("LEVEL") + g.getFontMetrics(new Font(fontName, Font.PLAIN, 70)).stringWidth("" + tempLevel));
-        g.drawString("LEVEL", xLevel, 100);
-        g.setFont(new Font(fontName, Font.PLAIN, 70));
-        g.drawString("" + tempLevel, xLevel + 100, 100);
+        rankGraphic.setColor(highlightColor);
+        rankGraphic.setFont(new Font(fontName, Font.PLAIN, 30));
+        int xLevel = 930 - (rankGraphic.getFontMetrics().stringWidth("LEVEL") + rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, 70)).stringWidth("" + tempLevel));
+        rankGraphic.drawString("LEVEL", xLevel, 100);
+        rankGraphic.setFont(new Font(fontName, Font.PLAIN, 70));
+        rankGraphic.drawString("" + tempLevel, xLevel + 100, 100);
 
         // Rank
-        g.setColor(textColor);
-        g.setFont(new Font(fontName, Font.PLAIN, 30));
+        rankGraphic.setColor(textColor);
+        rankGraphic.setFont(new Font(fontName, Font.PLAIN, 30));
         int rank = getRank(user, guild);
         String rankString = "#" + rank;
-        int xRank = xLevel - (g.getFontMetrics().stringWidth("RANK") + g.getFontMetrics(new Font(fontName, Font.PLAIN, 70)).stringWidth(rankString)) - 20;
-        g.drawString("RANK", xRank, 100);
-        g.setFont(new Font(fontName, Font.PLAIN, 70));
-        g.drawString(rankString, xRank + 90, 100);
+        int xRank = xLevel - (rankGraphic.getFontMetrics().stringWidth("RANK") + rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, 70)).stringWidth(rankString)) - 20;
+        rankGraphic.drawString("RANK", xRank, 100);
+        rankGraphic.setFont(new Font(fontName, Font.PLAIN, 70));
+        rankGraphic.drawString(rankString, xRank + 90, 100);
 
         // Medal for rank
-        g.setColor(outlineColor);
-        g.setStroke(new BasicStroke(10));
+        rankGraphic.setColor(outlineColor);
+        rankGraphic.setStroke(new BasicStroke(10));
 
         switch(rank)
         {
             case 1:
-                g.drawArc(204, 194, 52, 52, 70, 135);
-                g.drawImage(goldMedal, 180, 189, null);
+                rankGraphic.drawArc(204, 194, 52, 52, 70, 135);
+                rankGraphic.drawImage(goldMedal, 180, 189, null);
                 break;
             case 2:
-                g.drawArc(204, 194, 52, 52, 70, 135);
-                g.drawImage(silverMedal, 180, 189, null);
+                rankGraphic.drawArc(204, 194, 52, 52, 70, 135);
+                rankGraphic.drawImage(silverMedal, 180, 189, null);
                 break;
             case 3:
-                g.drawArc(204, 194, 52, 52, 70, 135);
-                g.drawImage(bronzeMedal, 180, 189, null);
+                rankGraphic.drawArc(204, 194, 52, 52, 70, 135);
+                rankGraphic.drawImage(bronzeMedal, 180, 189, null);
                 break;
             default:
                 break;
@@ -924,24 +932,24 @@ public class LevelUtils
         switch((userLevel - 1)/100)
         {
             case 1:
-                g.drawArc(204, 54, 52, 52, 160, 135);
-                g.drawImage(topazGem, 205, 60, null);
+                rankGraphic.drawArc(204, 54, 52, 52, 160, 135);
+                rankGraphic.drawImage(topazGem, 205, 60, null);
                 break;
             case 2:
-                g.drawArc(204, 54, 52, 52, 160, 135);
-                g.drawImage(rubyGem, 205, 60, null);
+                rankGraphic.drawArc(204, 54, 52, 52, 160, 135);
+                rankGraphic.drawImage(rubyGem, 205, 60, null);
                 break;
             case 3:
-                g.drawArc(204, 54, 52, 52, 160, 135);
-                g.drawImage(sapphireGem, 205, 60, null);
+                rankGraphic.drawArc(204, 54, 52, 52, 160, 135);
+                rankGraphic.drawImage(sapphireGem, 205, 60, null);
                 break;
             case 4:
-                g.drawArc(204, 54, 52, 52, 160, 135);
-                g.drawImage(emeraldGem, 205, 60, null);
+                rankGraphic.drawArc(204, 54, 52, 52, 160, 135);
+                rankGraphic.drawImage(emeraldGem, 205, 60, null);
                 break;
             case 5:
-                g.drawArc(204, 54, 52, 52, 160, 135);
-                g.drawImage(diamondGem, 205, 60, null);
+                rankGraphic.drawArc(204, 54, 52, 52, 160, 135);
+                rankGraphic.drawImage(diamondGem, 205, 60, null);
                 break;
             default:
                 break;
@@ -949,20 +957,20 @@ public class LevelUtils
 
 
         // XP Bar Background
-        g.setColor(secondTextColor);
-        g.fillRoundRect(294, 204, 640, 32, 10, 10);
+        rankGraphic.setColor(secondTextColor);
+        rankGraphic.fillRoundRect(294, 204, 640, 32, 10, 10);
 
         // Fill XP Bar
-        g.setColor(highlightColor);
+        rankGraphic.setColor(highlightColor);
         double width = (xpProg / xpDiff) * 640;
         if(isMaxed)
         {
             width = 640;
         }
-        g.fillRoundRect(296, 204, (int)width, 32, 10, 10);
+        rankGraphic.fillRoundRect(296, 204, (int)width, 32, 10, 10);
 
         // XP Separators
-        g.setColor(thirdTextColor);
+        rankGraphic.setColor(thirdTextColor);
         double x = 294.0;
         double amountOfSeps;
         int height;
@@ -975,7 +983,7 @@ public class LevelUtils
                 x += 640.0 / amountOfSeps;
                 if(x < 294 + 640)
                 {
-                    g.fillRect((int)x, 204, 5, 32);
+                    rankGraphic.fillRect((int)x, 204, 5, 32);
                 }
             }
         }
@@ -997,7 +1005,7 @@ public class LevelUtils
                 x += 640.0 / amountOfLittleSeps;
                 if(x < 294 + 640)
                 {
-                    g.fillRect((int)x, 204, 5, height);
+                    rankGraphic.fillRect((int)x, 204, 5, height);
                 }
             }
         }
@@ -1019,7 +1027,7 @@ public class LevelUtils
                 x += 640.0 / amountOfLittleSeps;
                 if(x < 294 + 640)
                 {
-                    g.fillRect((int)x, 204, 5, height);
+                    rankGraphic.fillRect((int)x, 204, 5, height);
                 }
             }
         }
@@ -1041,7 +1049,7 @@ public class LevelUtils
                 x += 640.0 / amountOfLittleSeps;
                 if(x < 294 + 640)
                 {
-                    g.fillRect((int)x, 204, 5, height);
+                    rankGraphic.fillRect((int)x, 204, 5, height);
                 }
             }
         }
@@ -1063,24 +1071,24 @@ public class LevelUtils
                 x += 640.0 / amountOfLittleSeps;
                 if(x < 294 + 640)
                 {
-                    g.fillRect((int)x, 204, 5, height);
+                    rankGraphic.fillRect((int)x, 204, 5, height);
                 }
             }
         }
 
         // XP Bar Background - Part 2 Electric Boogaloo
-        g.setStroke(new BasicStroke(6));
-        g.setColor(backgroundColor);
-        g.drawRoundRect(290, 200, 650, 40, 10, 10);
+        rankGraphic.setStroke(new BasicStroke(6));
+        rankGraphic.setColor(backgroundColor);
+        rankGraphic.drawRoundRect(290, 200, 650, 40, 10, 10);
         if(isMaxed)
         {
-            g.setColor(highlightColor);
-            g.setStroke(new BasicStroke(10));
-            g.fillRoundRect(296, 204, 640, 32, 10, 10);
+            rankGraphic.setColor(highlightColor);
+            rankGraphic.setStroke(new BasicStroke(10));
+            rankGraphic.fillRoundRect(296, 204, 640, 32, 10, 10);
         }
-        g.setStroke(new BasicStroke(4));
-        g.setColor(outlineColor);
-        g.drawRoundRect(294, 204, 642, 32, 10, 10);
+        rankGraphic.setStroke(new BasicStroke(4));
+        rankGraphic.setColor(outlineColor);
+        rankGraphic.drawRoundRect(294, 204, 642, 32, 10, 10);
 
         return image;
     }
@@ -1125,5 +1133,68 @@ public class LevelUtils
         output.close();
 
         return outputFile;
+    }
+
+    static double getRandomIntegerBetweenRange(double min, double max)
+    {
+        return (int)(Math.random() * ((max-min)+1))+min;
+    }
+
+    static IRole selectMOTMRole(IGuild guild)
+    {
+        try {
+            Statement createStmt = levelConn.createStatement();
+            String guildID = guild.getStringID();
+            String query = "SELECT * FROM multipliers_" + guildID + " WHERE IsMOTM = TRUE;";
+
+            ResultSet motmRoles = createStmt.executeQuery(query);
+            motmRoles.next();
+            return guild.getRoleByID(motmRoles.getLong(1));
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    static void PrintMultipliers(IGuild guild, IUser user, IChannel channel)
+    {
+        //Create an embed
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.withTitle("Current Multipliers");
+
+        //Check each role the user has and see if they have a special multiplier
+        ArrayList<IRole> multiplierRoles = new ArrayList<>(); //Blank list of roles to store roles that actually give multipliers
+        for(IRole role: user.getRolesForGuild(guild))
+        {
+            if(getMultiplier(guild, role) != 1.0)
+            {
+                //Since this role does not have a standard 1.0 multiplier, we can add it to the list of roles the user has that gives multipliers
+                multiplierRoles.add(role);
+            }
+        }
+
+        //Check if there's any multiplier giving roles for the user and print them. If not, just state they do not have any roles.
+        if(!multiplierRoles.isEmpty())
+        {
+            embed.appendField("Roles", "Here are a list of roles that grant XP multipliers: ", false);
+            //Print these to the embed -- add each role to the embed and add what multiplier it gives
+            for(IRole role: multiplierRoles)
+            {
+                embed.appendField(role.getName(), getMultiplier(guild, role) + "x", true);
+            }
+        }
+        else
+        {
+            //This user does not have any roles that grant multipliers
+            embed.appendField("Roles", "You do not seem to have any roles that grant XP multipliers :(", false);
+        }
+
+        //Append the total multiplier of the current user.
+        embed.appendField("Test", "This should be a separated field", false);
+
+        //Build and send the embed
+        BotUtils.SendEmbed(channel, embed.build());
     }
 }

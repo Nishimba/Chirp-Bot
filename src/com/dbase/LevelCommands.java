@@ -5,6 +5,7 @@ import com.nish.Command;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.IUser;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -13,10 +14,7 @@ import java.util.HashMap;
 
 public class LevelCommands
 {
-    public LevelCommands()
-    {
-
-    }
+    public LevelCommands() { }
 
     public LevelCommands(HashMap<String, Command> commandMap)
     {
@@ -32,7 +30,7 @@ public class LevelCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank"}, true, false)
+        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank [@user]"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -61,7 +59,7 @@ public class LevelCommands
             }
         };
 
-        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyXP amount @mention"}, true, true)
+        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyxp amount @user"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -148,7 +146,15 @@ public class LevelCommands
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try {
-                    LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]));
+                    if (args.length == 3)
+                    {
+                        LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]), false);
+                    }
+                    else
+                    {
+                        LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]), true);
+                    }
+
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
                 }
                 catch (Exception e)
@@ -170,30 +176,85 @@ public class LevelCommands
             }
         };
 
-        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false, false)
+        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false) {
+            public void Execute(MessageReceivedEvent event, String[] args) {
+                ResultSet results = LevelUtils.topN(event.getGuild(), 10);
+
+                int i = 0;
+
+                try {
+                    if (results != null) {
+                        while (results.next()) {
+                            i++;
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                BotUtils.SendFile(event.getChannel(), LevelUtils.createLeaderboardCard(event, event.getGuild(), i));
+            }
+        };
+
+        Command motmRoll = new Command("motmroll", "Rolls for a new member of the month based on the top 25 users in the leaderboard.", new String[]{"~motmroll"}, false)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
-                ResultSet results = LevelUtils.topN(event.getGuild(), 10);
+                //Generate top 25 Users and store them.
+                ResultSet top25Users = LevelUtils.topN(event.getGuild(), 25);
 
                 int i = 0;
 
                 try
                 {
-                    if (results != null)
+                    if (top25Users != null)
                     {
-                        while(results.next())
+                        while(top25Users.next())
                         {
                             i++;
                         }
+
+                        top25Users.beforeFirst(); //Put the pointer of the set to before the first index
+                        //i is now equal to the amount of users in the top 25 list (just in-case there isn't 25 people in the leaderboards bc dead server lol)
+                        //Time to pick a WINNER!
+                        double rankIndex = LevelUtils.getRandomIntegerBetweenRange(1, i);
+                        for(int j = 0; j < rankIndex; j++)
+                        {
+                            top25Users.next();
+                        }
+
+                        IUser winningUser = event.getGuild().getUserByID(top25Users.getLong(1)); //Gets the user from the randomly generated winning index
+                        //winningUser.addRole(LevelUtils.selectMOTMRole(event.getGuild())); //TODO: Add this back later.
+
+                        BotUtils.SendMessage(event.getChannel(), winningUser.mention() + " was drawn as the winner of MOTM!");
                     }
                 }
                 catch (SQLException e)
                 {
                     e.printStackTrace();
                 }
+            }
+        };
 
-                BotUtils.SendFile(event.getChannel(), LevelUtils.createLeaderboardCard(event, event.getGuild(), i));
+        Command viewCurrentMultipliers = new Command("multipliers", "Shows your current XP modifiers.", new String[]{"~multipliers [@user]"}, false)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                if(args.length == 1)
+                {
+                    BotUtils.SendMessage(event.getChannel(), "This command was sent without arguments.");
+                    //View current multipliers of current user
+                    LevelUtils.PrintMultipliers(event.getGuild(), event.getAuthor(), event.getChannel());
+                }
+                else if(args.length == 2)
+                {
+                    //View current multipliers of a given user
+                    LevelUtils.PrintMultipliers(event.getGuild(), event.getMessage().getMentions().get(0), event.getChannel());
+                }
+                else
+                {
+                    BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
+                }
             }
         };
 
@@ -205,5 +266,7 @@ public class LevelCommands
         commandMap.put(changeMultiplierCommand.commandName, changeMultiplierCommand);
         commandMap.put(addLevelCutoffCommand.commandName, addLevelCutoffCommand);
         commandMap.put(top10Command.commandName, top10Command);
+        commandMap.put(motmRoll.commandName, motmRoll);
+        commandMap.put(viewCurrentMultipliers.commandName, viewCurrentMultipliers);
     }
 }
