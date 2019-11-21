@@ -203,6 +203,11 @@ public class LevelCommands
         {
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {
+                if(args.length != 1)
+                {
+                    return false;
+                }
+
                 //Generate top 25 Users and store them.
                 ResultSet top25Users = LevelUtils.topN(event.getGuild(), 25);
 
