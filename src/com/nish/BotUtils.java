@@ -93,7 +93,7 @@ public class BotUtils
 
                 Collections.sort(alphaList);
 
-                //create a writeable string from the alphabetised contents
+                //create a writable string from the alphabetised contents
                 String tempString = "";
                 for (String s : alphaList)
                 {

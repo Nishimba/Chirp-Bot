@@ -4,9 +4,11 @@ import com.nish.BotUtils;
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.util.EmbedBuilder;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -17,10 +19,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
@@ -1157,5 +1156,45 @@ public class LevelUtils
             e.printStackTrace();
             return null;
         }
+    }
+
+    static void PrintMultipliers(IGuild guild, IUser user, IChannel channel)
+    {
+        //Create an embed
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.withTitle("Current Multipliers");
+
+        //Check each role the user has and see if they have a special multiplier
+        ArrayList<IRole> multiplierRoles = new ArrayList<>(); //Blank list of roles to store roles that actually give multipliers
+        for(IRole role: user.getRolesForGuild(guild))
+        {
+            if(getMultiplier(guild, role) != 1.0)
+            {
+                //Since this role does not have a standard 1.0 multiplier, we can add it to the list of roles the user has that gives multipliers
+                multiplierRoles.add(role);
+            }
+        }
+
+        //Check if there's any multiplier giving roles for the user and print them. If not, just state they do not have any roles.
+        if(!multiplierRoles.isEmpty())
+        {
+            embed.appendField("Roles", "Here are a list of roles that grant XP multipliers: ", false);
+            //Print these to the embed -- add each role to the embed and add what multiplier it gives
+            for(IRole role: multiplierRoles)
+            {
+                embed.appendField(role.getName(), getMultiplier(guild, role) + "x", true);
+            }
+        }
+        else
+        {
+            //This user does not have any roles that grant multipliers
+            embed.appendField("Roles", "You do not seem to have any roles that grant XP multipliers :(", false);
+        }
+
+        //Append the total multiplier of the current user.
+        embed.appendField("Test", "This should be a separated field", false);
+
+        //Build and send the embed
+        BotUtils.SendEmbed(channel, embed.build());
     }
 }

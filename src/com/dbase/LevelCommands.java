@@ -14,10 +14,7 @@ import java.util.HashMap;
 
 public class LevelCommands
 {
-    public LevelCommands()
-    {
-
-    }
+    public LevelCommands() { }
 
     public LevelCommands(HashMap<String, Command> commandMap)
     {
@@ -33,7 +30,7 @@ public class LevelCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank"}, true)
+        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank [@user]"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -62,7 +59,7 @@ public class LevelCommands
             }
         };
 
-        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyXP amount @mention"}, true)
+        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyxp amount @user"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -80,7 +77,7 @@ public class LevelCommands
             }
         };
 
-        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifyLevel amount @mention"}, true)
+        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifylevel amount @mention"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -144,7 +141,7 @@ public class LevelCommands
             }
         };
 
-        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role [motm bool]"}, true)
+        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changemultiplier multiplier @role [motm bool]"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -168,7 +165,7 @@ public class LevelCommands
             }
         };
 
-        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addLevelRole @role level"}, true)
+        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addlevelrole @role level"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -239,6 +236,28 @@ public class LevelCommands
             }
         };
 
+        Command viewCurrentMultipliers = new Command("multipliers", "Shows your current XP modifiers.", new String[]{"~multipliers [@user]"}, false)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                if(args.length == 1)
+                {
+                    BotUtils.SendMessage(event.getChannel(), "This command was sent without arguments.");
+                    //View current multipliers of current user
+                    LevelUtils.PrintMultipliers(event.getGuild(), event.getAuthor(), event.getChannel());
+                }
+                else if(args.length == 2)
+                {
+                    //View current multipliers of a given user
+                    LevelUtils.PrintMultipliers(event.getGuild(), event.getMessage().getMentions().get(0), event.getChannel());
+                }
+                else
+                {
+                    BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
+                }
+            }
+        };
+
         commandMap.put(rankCommand.commandName, rankCommand);
         commandMap.put(xpCommand.commandName, xpCommand);
         commandMap.put(levelCommand.commandName, levelCommand);
@@ -248,5 +267,6 @@ public class LevelCommands
         commandMap.put(addLevelCutoffCommand.commandName, addLevelCutoffCommand);
         commandMap.put(top10Command.commandName, top10Command);
         commandMap.put(motmRoll.commandName, motmRoll);
+        commandMap.put(viewCurrentMultipliers.commandName, viewCurrentMultipliers);
     }
 }
