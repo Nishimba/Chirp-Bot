@@ -17,9 +17,9 @@ public class VODCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command addVodCommand = new Command("addvod", "Adds a VOD to the database.", new String[]{"~addvod [SR], [Hero], [Map], [YT Link]"}, true, false)
+        Command addVodCommand = new Command("addvod", "Adds a VOD to the database.", new String[]{"~addvod [SR], [Hero], [Map], [YT Link]"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 ArrayList<Object> VODinfo = VODUtils.ValidateVODInfo(event, args);
 
@@ -34,26 +34,18 @@ public class VODCommands
                     {
                         BotUtils.SendMessage(event.getChannel(), "There was an error retrieving VOD ID, please contact a staff member for help!");
                     }
+                    return true;
                 }
                 else
                 {
-                    EmbedBuilder builder = new EmbedBuilder();
-
-                    builder.withAuthorName("Chirp Help");
-
-                    //flavour text with the information about the command
-                    builder.withTitle("You seemed to have used the addvod command incorrectly! I'm here to help - here's everything I know about addvod:");
-                    builder.appendField(commandName, description, false);
-                    builder.appendField("Example uses of " + (commandName), BotUtils.OutputUsage(commandName, commandMap), false);//output usages for the command
-
-                    BotUtils.SendEmbed(event.getChannel(), builder.build());
+                    return false;
                 }
             }
         };
 
-        Command delVodCommand = new Command("deletevod", "Removes a VOD from the database.", new String[]{"~deletevod ID"}, true, false)
+        Command delVodCommand = new Command("deletevod", "Removes a VOD from the database.", new String[]{"~deletevod ID"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
@@ -66,25 +58,27 @@ public class VODCommands
                     {
                         BotUtils.SendMessage(event.getChannel(), "VOD could not be found.");
                     }
+                    return true;
                 }
                 catch (NumberFormatException e)
                 {
-                    BotUtils.SendMessage(event.getChannel(), "VOD ID must be a number.");
+                    return false;
                 }
             }
         };
 
-        Command getVodCommand = new Command("getvod", "Gets information for a VOD.", new String[]{"~getvod ID"}, true, false)
+        Command getVodCommand = new Command("getvod", "Gets information for a VOD.", new String[]{"~getvod ID"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
                     VODUtils.SelectVODRecord(Integer.parseInt(args[1]), event);
+                    return true;
                 }
                 catch (NumberFormatException e)
                 {
-                    BotUtils.SendMessage(event.getChannel(), "VOD ID must be a number.");
+                    return false;
                 }
             }
         };

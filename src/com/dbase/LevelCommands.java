@@ -32,13 +32,13 @@ public class LevelCommands
     {
         Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank [@user]"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
-
                 if(args.length == 1)
                 {
                     File output = LevelUtils.createRankCard(event.getAuthor(), event.getGuild());
                     BotUtils.SendFile(event.getChannel(), output);
+                    return true;
                 }
                 else if(args.length == 2)
                 {
@@ -46,40 +46,34 @@ public class LevelCommands
                     {
                         File output = LevelUtils.createRankCard(event.getMessage().getMentions().get(0), event.getGuild());
                         BotUtils.SendFile(event.getChannel(), output);
-                    }
-                    else
-                    {
-                        BotUtils.SendMessage(event.getChannel(), "Bots can't get XP you moron!");
+                        return true;
                     }
                 }
-                else
-                {
-                    BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
-                }
+                return false;
             }
         };
 
         Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyxp amount @user"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
                     LevelUtils.addXP(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s XP was modified to " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()));
+                    return true;
                 }
                 catch (Exception e)
                 {
-                    // TODO catch different exceptions and return different errors
-                    BotUtils.SendMessage(event.getChannel(), "XP must be a number");
+                    return false;
                 }
             }
         };
 
-        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifyLevel amount @mention"}, true, true)
+        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifyLevel amount @mention"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
@@ -91,18 +85,18 @@ public class LevelCommands
                     LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s level was modified to " + LevelUtils.getCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild()));
+                    return true;
                 }
                 catch (Exception e)
                 {
-                    // TODO catch different exceptions and return different errors
-                    BotUtils.SendMessage(event.getChannel(), "Level must be a number");
+                    return false;
                 }
             }
         };
 
-        Command setXPCommand = new Command("setXP", "Set users XP", new String[]{"~setXP amount @mention"}, true, true)
+        Command setXPCommand = new Command("setXP", "Set users XP", new String[]{"~setXP amount @mention"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
@@ -112,18 +106,18 @@ public class LevelCommands
                     LevelUtils.addXP(diff, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s XP was set to " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()));
+                    return true;
                 }
                 catch (Exception e)
                 {
-                    // TODO catch different exceptions and return different errors
-                    BotUtils.SendMessage(event.getChannel(), "XP must be a number");
+                    return false;
                 }
             }
         };
 
-        Command setLevelCommand = new Command("setLevel", "Set users level", new String[]{"~setLevel amount @mention"}, true, true)
+        Command setLevelCommand = new Command("setLevel", "Set users level", new String[]{"~setLevel amount @mention"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
@@ -132,18 +126,18 @@ public class LevelCommands
                     LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s level was set to " + LevelUtils.getCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild()));
+                    return true;
                 }
                 catch (Exception e)
                 {
-                    // TODO catch different exceptions and return different errors
-                    BotUtils.SendMessage(event.getChannel(), "Level must be a number");
+                    return false;
                 }
             }
         };
 
-        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role"}, true, true)
+        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changeMultiplier multiplier @role"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 try {
                     if (args.length == 3)
@@ -156,49 +150,58 @@ public class LevelCommands
                     }
 
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
+                    return true;
                 }
                 catch (Exception e)
                 {
-                    // TODO catch different exceptions and return different errors
-                    BotUtils.SendMessage(event.getChannel(), "Modifier must be a number");
+                    return false;
                 }
             }
         };
 
-        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addLevelRole @role level"}, true, true)
+        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addLevelRole @role level"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 IRole role = event.getMessage().getRoleMentions().get(0);
                 int level = Integer.parseInt(args[2]);
                 LevelUtils.addRoleToDB(role, event.getGuild(), level);
                 BotUtils.SendMessage(event.getChannel(), "Role " + role.getName() + " was given a level requirement of " + level);
+                return true;
             }
         };
 
-        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false) {
-            public void Execute(MessageReceivedEvent event, String[] args) {
+        Command top10Command = new Command("leaderboard", "Outputs the top 10 users on the server", new String[]{"~leaderboard"}, false)
+        {
+            public boolean Execute(MessageReceivedEvent event, String[] args)
+            {
                 ResultSet results = LevelUtils.topN(event.getGuild(), 10);
 
                 int i = 0;
 
-                try {
-                    if (results != null) {
-                        while (results.next()) {
+                try
+                {
+                    if (results != null)
+                    {
+                        while (results.next())
+                        {
                             i++;
                         }
                     }
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                }
+                catch (SQLException e)
+                {
+                    return false;
                 }
 
                 BotUtils.SendFile(event.getChannel(), LevelUtils.createLeaderboardCard(event, event.getGuild(), i));
+                return true;
             }
         };
 
         Command motmRoll = new Command("motmroll", "Rolls for a new member of the month based on the top 25 users in the leaderboard.", new String[]{"~motmroll"}, false)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 //Generate top 25 Users and store them.
                 ResultSet top25Users = LevelUtils.topN(event.getGuild(), 25);
@@ -227,33 +230,38 @@ public class LevelCommands
                         //winningUser.addRole(LevelUtils.selectMOTMRole(event.getGuild())); //TODO: Add this back later.
 
                         BotUtils.SendMessage(event.getChannel(), winningUser.mention() + " was drawn as the winner of MOTM!");
+                        return true;
                     }
+                    return false;
                 }
                 catch (SQLException e)
                 {
                     e.printStackTrace();
+                    return false;
                 }
             }
         };
 
         Command viewCurrentMultipliers = new Command("multipliers", "Shows your current XP modifiers.", new String[]{"~multipliers [@user]"}, false)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 if(args.length == 1)
                 {
                     BotUtils.SendMessage(event.getChannel(), "This command was sent without arguments.");
                     //View current multipliers of current user
                     LevelUtils.PrintMultipliers(event.getGuild(), event.getAuthor(), event.getChannel());
+                    return true;
                 }
                 else if(args.length == 2)
                 {
                     //View current multipliers of a given user
                     LevelUtils.PrintMultipliers(event.getGuild(), event.getMessage().getMentions().get(0), event.getChannel());
+                    return true;
                 }
                 else
                 {
-                    BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
+                    return false;
                 }
             }
         };

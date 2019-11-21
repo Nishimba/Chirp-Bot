@@ -1182,7 +1182,7 @@ public class LevelUtils
             //Print these to the embed -- add each role to the embed and add what multiplier it gives
             for(IRole role: multiplierRoles)
             {
-                embed.appendField(role.getName(), getMultiplier(guild, role) + "x", true);
+                embed.appendField(getMultiplier(guild, role) + "x", role.mention(), true);
             }
         }
         else
