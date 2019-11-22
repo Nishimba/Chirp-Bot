@@ -21,10 +21,7 @@ public class DatabaseSetup
             List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
             if (login != null)
             {
-                System.out.println(login.get(1));
-                System.out.println(login.get(0));
-
-                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
+                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord", login.get(0), login.get(1));
 
                 //creates the vod and level utilities
                 new LevelUtils(conn, guilds);
@@ -36,7 +33,7 @@ public class DatabaseSetup
                 System.exit(0);
             }
         }
-        catch (SQLException ex)
+        catch (Exception ex)
         {
             //a console log reminder for during the developing phase. Delete this line once the bot is complete.
             ex.printStackTrace();
