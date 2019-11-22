@@ -21,7 +21,7 @@ public class DatabaseSetup
             List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
             if (login != null)
             {
-                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord", login.get(0), login.get(1));
+                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?serverTimezone=AEDT", login.get(0), login.get(1));
 
                 //creates the vod and level utilities
                 new LevelUtils(conn, guilds);
