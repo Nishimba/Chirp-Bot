@@ -67,7 +67,7 @@ public class LevelUtils
                 System.out.println("Created the levels table");
             }
         }
-        catch (SQLException e)
+        catch (Exception e)
         {
             e.printStackTrace();
         }

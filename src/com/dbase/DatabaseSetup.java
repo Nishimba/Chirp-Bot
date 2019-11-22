@@ -23,8 +23,6 @@ public class DatabaseSetup
             {
                 Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?serverTimezone=ACT", login.get(0), login.get(1));
 
-                System.out.println("connected");
-
                 //creates the vod and level utilities
                 new LevelUtils(conn, guilds);
                 new VODUtils(conn, guilds);
