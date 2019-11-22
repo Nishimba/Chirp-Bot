@@ -21,6 +21,9 @@ public class DatabaseSetup
             List<String> login = BotUtils.ReadLines("res/DBConfig.txt");
             if (login != null)
             {
+                System.out.println(login.get(1));
+                System.out.println(login.get(0));
+
                 Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=ACT", login.get(0), login.get(1));
 
                 //creates the vod and level utilities
