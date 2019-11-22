@@ -62,6 +62,9 @@ public class LevelUtils
                         "PRIMARY KEY(UserID));";
 
                 createStmt.execute(createLevelsTable);
+
+                System.out.println(createLevelsTable);
+                System.out.println("Created the levels table");
             }
         }
         catch (SQLException e)
