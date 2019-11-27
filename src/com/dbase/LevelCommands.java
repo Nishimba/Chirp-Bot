@@ -2,6 +2,7 @@ package com.dbase;
 
 import com.nish.BotUtils;
 import com.nish.Command;
+import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IRole;
@@ -59,13 +60,13 @@ public class LevelCommands
             }
         };
 
-        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyxp amount @user"}, true)
+        Command xpCommand = new Command("modifyXP", "Add/remove an amount of XP to/from a user", new String[]{"~modifyxp <@user> <amount>"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
-                    LevelUtils.addXP(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild());
+                    LevelUtils.addXP(Integer.parseInt(args[2]), event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s XP was modified to " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()));
                 }
@@ -77,14 +78,14 @@ public class LevelCommands
             }
         };
 
-        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifylevel amount @mention"}, true)
+        Command levelCommand = new Command("modifyLevel", "Add/remove an amount of Levels to/from a user", new String[]{"~modifylevel <@user> <amount>"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
                     int currentLevel = LevelUtils.getCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild());
-                    int targetLevel = currentLevel + Integer.parseInt(args[1]);
+                    int targetLevel = currentLevel + Integer.parseInt(args[2]);
 
                     int xpRequired = LevelUtils.xpRequiredForLevel(targetLevel, event.getMessage().getMentions().get(0), event.getGuild());
 
@@ -100,14 +101,14 @@ public class LevelCommands
             }
         };
 
-        Command setXPCommand = new Command("setXP", "Set users XP", new String[]{"~setXP amount @mention"}, true)
+        Command setXPCommand = new Command("setXP", "Set users XP", new String[]{"~setXP <@user> <amount>"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
                     int currentXP = LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild());
-                    int targetXP = Integer.parseInt(args[1]);
+                    int targetXP = Integer.parseInt(args[2]);
                     int diff = targetXP - currentXP;
                     LevelUtils.addXP(diff, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
@@ -121,13 +122,13 @@ public class LevelCommands
             }
         };
 
-        Command setLevelCommand = new Command("setLevel", "Set users level", new String[]{"~setLevel amount @mention"}, true)
+        Command setLevelCommand = new Command("setLevel", "Set users level", new String[]{"~setLevel <@user> <amount>"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try
                 {
-                    int xpRequired = LevelUtils.xpRequiredForLevel(Integer.parseInt(args[1]), event.getMessage().getMentions().get(0), event.getGuild());
+                    int xpRequired = LevelUtils.xpRequiredForLevel(Integer.parseInt(args[2]), event.getMessage().getMentions().get(0), event.getGuild());
 
                     LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
@@ -141,31 +142,23 @@ public class LevelCommands
             }
         };
 
-        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changemultiplier multiplier @role [motm bool]"}, true)
+        Command changeMultiplierCommand = new Command("changeMultiplier", "changes multiplier for a role", new String[]{"~changemultiplier <@role> <multiplier>"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 try {
-                    if (args.length == 3)
-                    {
-                        LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]), false);
-                    }
-                    else
-                    {
-                        LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[1]), true);
-                    }
-
-                    BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
+                    LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[2]));
+                    BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplierForRole(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
                 }
                 catch (Exception e)
                 {
                     // TODO catch different exceptions and return different errors
-                    BotUtils.SendMessage(event.getChannel(), "Modifier must be a number");
+                    BotUtils.SendMessage(event.getChannel(), "Arguments entered incorrectly. Role must be a mention of the role to add, and a multiplier must be provided as a double.");
                 }
             }
         };
 
-        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addlevelrole @role level"}, true)
+        Command addLevelCutoffCommand = new Command("addLevelRole", "Adds a role to be given to users with the specified level", new String[]{"~addlevelrole <@role> <level>"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
@@ -236,13 +229,12 @@ public class LevelCommands
             }
         };
 
-        Command viewCurrentMultipliers = new Command("multipliers", "Shows your current XP modifiers.", new String[]{"~multipliers [@user]"}, false)
+        Command viewCurrentMultipliers = new Command("multipliers", "Shows your current XP modifiers.", new String[]{"~multipliers [@user]"}, true)
         {
             public void Execute(MessageReceivedEvent event, String[] args)
             {
                 if(args.length == 1)
                 {
-                    BotUtils.SendMessage(event.getChannel(), "This command was sent without arguments.");
                     //View current multipliers of current user
                     LevelUtils.PrintMultipliers(event.getGuild(), event.getAuthor(), event.getChannel());
                 }
@@ -250,6 +242,43 @@ public class LevelCommands
                 {
                     //View current multipliers of a given user
                     LevelUtils.PrintMultipliers(event.getGuild(), event.getMessage().getMentions().get(0), event.getChannel());
+                }
+                else
+                {
+                    BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
+                }
+            }
+        };
+
+        Command toggleMotm = new Command("toggleMOTM", "Toggles a specific role as the MOTM role for the current server.", new String[]{"~toggleMOTM <@role>"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                if(args.length == 2)
+                {
+                    int commandStatus = LevelUtils.toggleMOTM(event.getGuild(), event.getMessage().getRoleMentions().get(0));
+
+                    /*
+                        Return codes/values for the command:
+                        0 - MOTM role was successfully swapped
+                        1 - User is trying to enter a role as MOTM when one already exists
+                        2 - New role was set as MOTM
+                    */
+                    switch (commandStatus)
+                    {
+                        case 0:
+                            BotUtils.SendMessage(event.getChannel(), "The role " + event.getMessage().getRoleMentions().get(0) + " was already assigned as MOTM and has now been un-assigned.");
+                            break;
+                        case 1:
+                            BotUtils.SendMessage(event.getChannel(), "A different role is already assigned as MOTM. Please un-assign the other role to be able to set a new role as the MOTM role for the server.");
+                            break;
+                        case 2:
+                            BotUtils.SendMessage(event.getChannel(), "The role " + event.getMessage().getRoleMentions().get(0) + " has now been made the MOTM role for this server.");
+                            break;
+                        default:
+                            BotUtils.SendMessage(event.getChannel(), "Unspecified error occurred during MOTM toggling process.");
+                            break;
+                    }
                 }
                 else
                 {
@@ -268,5 +297,6 @@ public class LevelCommands
         commandMap.put(top10Command.commandName, top10Command);
         commandMap.put(motmRoll.commandName, motmRoll);
         commandMap.put(viewCurrentMultipliers.commandName, viewCurrentMultipliers);
+        commandMap.put(toggleMotm.commandName, toggleMotm);
     }
 }

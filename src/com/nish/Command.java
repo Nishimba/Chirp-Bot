@@ -13,6 +13,7 @@ public abstract class Command
     protected String description; //the general description of the command
     public String commandName; //the name of the command. What it is called using.
     boolean takesArgs; //whether or not the command takes arguments
+    boolean isAdmin; //whether or not the command is only available to moderators
 
     //initiates the command
     protected Command(String name, String desc, String[] usage, boolean args)

@@ -51,7 +51,6 @@ public class MainRunner
             }
         }
 
-
         //print the guilds the bot is in
         BotUtils.PrintGuilds(cli);
 
