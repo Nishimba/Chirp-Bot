@@ -2,10 +2,8 @@ package com.dbase;
 
 import com.nish.BotUtils;
 import com.nish.Command;
-import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.impl.obj.VoiceChannel;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
@@ -15,7 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 public class LevelCommands
 {
@@ -35,7 +32,7 @@ public class LevelCommands
 
     private void InitiateCommands(HashMap<String, Command> commandMap)
     {
-        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank [@user]"}, true)
+        Command rankCommand = new Command("rank", "Display the users current rank", new String[]{"~rank [@user]"}, false)
         {
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {
@@ -144,15 +141,26 @@ public class LevelCommands
         {
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {
-                try {
-                    LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[2]));
-                    BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplierForRole(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
-                }
-                catch (Exception e)
+                if(args.length == 3)
                 {
-                    // TODO catch different exceptions and return different errors
-                    BotUtils.SendMessage(event.getChannel(), "Arguments entered incorrectly. Role must be a mention of the role to add, and a multiplier must be provided as a double.");
+                    try {
+                        LevelUtils.addMultiplier(event.getGuild(), event.getMessage().getRoleMentions().get(0), Double.parseDouble(args[2]));
+                        BotUtils.SendMessage(event.getChannel(), event.getMessage().getRoleMentions().get(0).getName() + "'s multiplier was set to " + LevelUtils.getMultiplierForRole(event.getGuild(), event.getMessage().getRoleMentions().get(0)));
+                    }
+                    catch (Exception e)
+                    {
+                        // TODO catch different exceptions and return different errors
+                        BotUtils.SendMessage(event.getChannel(), "Arguments entered incorrectly. Role must be a mention of the role to add, and a multiplier must be provided as a double.");
+                        return false;
+                    }
                 }
+                else
+                {
+                    BotUtils.SendMessage(event.getChannel(), "Too few arguments entered!");
+                    return false;
+                }
+
+                return true;
             }
         };
 
@@ -196,7 +204,7 @@ public class LevelCommands
             }
         };
 
-        Command motmRoll = new Command("motmroll", "Rolls for a new member of the month based on the top 25 users in the leaderboard.", new String[]{"~motmroll"}, false)
+        Command motmRoll = new Command("motmroll", "Rolls for a new member of the month based on the top 25 users in the leaderboard.", new String[]{"~motmroll"}, true)
         {
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {
@@ -244,7 +252,7 @@ public class LevelCommands
             }
         };
 
-        Command viewCurrentMultipliers = new Command("multipliers", "Shows your current XP modifiers.", new String[]{"~multipliers [@user]"}, true)
+        Command viewCurrentMultipliers = new Command("multipliers", "Shows your current XP modifiers.", new String[]{"~multipliers [@user]"}, false)
         {
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {
@@ -269,7 +277,7 @@ public class LevelCommands
 
         Command toggleMotm = new Command("toggleMOTM", "Toggles a specific role as the MOTM role for the current server.", new String[]{"~toggleMOTM <@role>"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 if(args.length == 2)
                 {
@@ -300,13 +308,16 @@ public class LevelCommands
                 else
                 {
                     BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
+                    return false;
                 }
+
+                return true;
             }
         };
 
         Command awardXPForVoiceMembers = new Command("awardXPForVoicechatUsers", "Gives a set amount of XP to all users in the command executor's voice channel.", new String[]{"~awardXPForVoicechatUsers <amount>"}, true)
         {
-            public void Execute(MessageReceivedEvent event, String[] args)
+            public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 if(args.length == 2)
                 {
@@ -339,6 +350,8 @@ public class LevelCommands
                 {
                     BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
                 }
+
+                return true;
             }
         };
 

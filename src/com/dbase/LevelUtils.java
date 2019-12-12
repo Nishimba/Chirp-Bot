@@ -62,13 +62,10 @@ public class LevelUtils
                 String createLevelsTable = "CREATE TABLE IF NOT EXISTS levels_" + guildID + "(" +
                         "UserID BIGINT NOT NULL," +
                         "Level INT NOT NULL," +
-                        "XPAmount DOUBLE(10,2) NOT NULL," +
+                        "XPAmount DOUBLE(15,2) NOT NULL," +
                         "PRIMARY KEY(UserID));";
 
                 createStmt.execute(createLevelsTable);
-
-                System.out.println(createLevelsTable);
-                System.out.println("Created the levels table");
             }
         }
         catch (Exception e)
@@ -109,12 +106,11 @@ public class LevelUtils
         for (int i = 2; i < 100; i++)
         {
             levelBarriers[i] = Math.floor(levelBarriers[i - 1] + (((4.0 * (i - 1)) / 5.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 250.0));
-            System.out.println("Level " + i + " requires " + levelBarriers[i] + "XP.");
         }
 
         for(int i = 100; i <501; i++)
         {
-            levelBarriers[i] = levelBarriers[i-1] + (levelBarriers[99]);
+            levelBarriers[i] = levelBarriers[i-1] + 76309; //TODO Remove this hard coded number. What is the significance of this value exactly?
         }
 
         levelBarriers[501] = Integer.MAX_VALUE;
@@ -644,6 +640,7 @@ public class LevelUtils
         this error is caused regardless of the URL acquision method (using this new code or the existing code)
         so it might be as a result of the GIF creation code rather than this method
         */
+
         try
         {
             InputStream is;
@@ -674,6 +671,7 @@ public class LevelUtils
             if(!fileEnding.equals("gif"))
             {
                 combinedURL.append("png");
+                fileEnding = "png"; //Change file ending to png (so it's synchronous with what's set in the URL!)
             }
             else
             {

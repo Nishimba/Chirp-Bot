@@ -213,29 +213,4 @@ public class BotUtils
             System.out.println(guild.getName());
         }
     }
-
-    //Removes the filetype from a given String-format URL. Used for sourcing the images behind discord avatars.
-    //Credit to: https://stackoverflow.com/a/990492
-    //TODO Move this into LevelUtils method and make it save the removed extension for comparison purposes.
-    public static String removeURLExension(String fullURL)
-    {
-        String filename;
-
-        // Remove the path upto the filename.
-        int lastSeparatorIndex = fullURL.lastIndexOf(".");
-        if (lastSeparatorIndex == -1) {
-            filename = fullURL;
-        } else {
-            filename = fullURL.substring(lastSeparatorIndex + 1);
-        }
-
-        // Remove the extension.
-        int extensionIndex = filename.lastIndexOf(".");
-        if (extensionIndex == -1)
-        {
-            return fullURL;
-        }
-
-        return fullURL.substring(0, lastSeparatorIndex+1) + filename.substring(0, extensionIndex);
-    }
 }
