@@ -105,12 +105,13 @@ public class LevelUtils
         levelBarriers[1] = 250;
         for (int i = 2; i < 100; i++)
         {
-            levelBarriers[i] = levelBarriers[i - 1] + (((4.0 * (i - 1)) / 5.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 250.0);
+            levelBarriers[i] = Math.floor(levelBarriers[i - 1] + (((4.0 * (i - 1)) / 5.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 250.0));
+            System.out.println("Level " + i + " requires " + levelBarriers[i] + "XP.");
         }
 
         for(int i = 100; i <501; i++)
         {
-            levelBarriers[i] = levelBarriers[i-1] + (76309.8);
+            levelBarriers[i] = levelBarriers[i-1] + (levelBarriers[99]);
         }
 
         levelBarriers[501] = Integer.MAX_VALUE;
@@ -328,7 +329,7 @@ public class LevelUtils
         }
     }
 
-    private static int addNewUserToDB(ResultSet newUserSet, IUser user, IGuild guild, Statement createStmt, String sqlQuery)
+    private static double addNewUserToDB(ResultSet newUserSet, IUser user, IGuild guild, Statement createStmt, String sqlQuery)
     {
         String userID = user.getStringID();
         String guildID = guild.getStringID();
@@ -343,7 +344,7 @@ public class LevelUtils
                 newUserSet.next();
             }
 
-            return newUserSet.getInt(1);
+            return newUserSet.getDouble(1);
         }
         catch (SQLException e)
         {
@@ -352,7 +353,7 @@ public class LevelUtils
         }
     }
 
-    static int getCurrentXP(IUser user, IGuild guild)
+    static double getCurrentXP(IUser user, IGuild guild)
     {
         try
         {
@@ -377,7 +378,9 @@ public class LevelUtils
             String getUserLevel = "SELECT Level FROM levels_" + guild.getStringID() + " WHERE UserID=" + user.getStringID() + ";";
             ResultSet userLevelSet = createStmt.executeQuery(getUserLevel);
 
-            return addNewUserToDB(userLevelSet, user, guild, createStmt, getUserLevel);
+            //Down-cast double to return as an int
+            //E.g. 6.9 returns 6;
+            return (int) addNewUserToDB(userLevelSet, user, guild, createStmt, getUserLevel);
         }
         catch (SQLException e)
         {
@@ -388,12 +391,12 @@ public class LevelUtils
 
     private static int calculateCurrentLevel(IUser user, IGuild guild)
     {
-        int xp = getCurrentXP(user, guild);
+        double xp = getCurrentXP(user, guild);
         int level = 0;
 
         for (double levelBarrier : levelBarriers)
         {
-            if (xp >= (int)levelBarrier)
+            if (xp >= levelBarrier)
             {
                 level++;
             }
@@ -401,7 +404,7 @@ public class LevelUtils
         return level;
     }
 
-    static int xpRequiredForLevel(int targetLevel, IUser user, IGuild guild)
+    static double xpRequiredForLevel(int targetLevel, IUser user, IGuild guild)
     {
         if(targetLevel < 1)
         {
@@ -412,8 +415,8 @@ public class LevelUtils
             targetLevel = 502;
         }
 
-        int xp = getCurrentXP(user, guild);
-        int xpNeeded = (int)levelBarriers[targetLevel - 1];
+        double xp = getCurrentXP(user, guild);
+        double xpNeeded = levelBarriers[targetLevel - 1];
 
         return xpNeeded - xp;
     }
@@ -426,7 +429,7 @@ public class LevelUtils
         return upperXP - lowerXP;
     }
 
-    private static int xpProgress(int level, IUser user, IGuild guild)
+    private static double xpProgress(int level, IUser user, IGuild guild)
     {
         int lowerXP = (int)levelBarriers[level - 1];
 
@@ -1193,7 +1196,7 @@ public class LevelUtils
         }
 
         //Append the total multiplier of the current user.
-        embed.appendField("Total XP Multiplier: " + totalMultiplier + "x", "You will earn between " + (int)(MIN_XP_PER_MESSAGE * totalMultiplier) + "xp - " + (int)(MAX_XP_PER_MESSAGE * totalMultiplier) + "xp per message.", false);
+        embed.appendField("Total XP Multiplier: " + totalMultiplier + "x", "You will earn between " + (MIN_XP_PER_MESSAGE * totalMultiplier) + "xp - " + (MAX_XP_PER_MESSAGE * totalMultiplier) + "xp per message.", false);
 
         //Build and send the embed
         BotUtils.SendEmbed(channel, embed.build());

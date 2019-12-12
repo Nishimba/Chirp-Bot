@@ -5,13 +5,17 @@ import com.nish.Command;
 import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.obj.VoiceChannel;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.handle.obj.IVoiceChannel;
 
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 public class LevelCommands
 {
@@ -87,7 +91,7 @@ public class LevelCommands
                     int currentLevel = LevelUtils.getCurrentLevel(event.getMessage().getMentions().get(0), event.getGuild());
                     int targetLevel = currentLevel + Integer.parseInt(args[2]);
 
-                    int xpRequired = LevelUtils.xpRequiredForLevel(targetLevel, event.getMessage().getMentions().get(0), event.getGuild());
+                    double xpRequired = LevelUtils.xpRequiredForLevel(targetLevel, event.getMessage().getMentions().get(0), event.getGuild());
 
                     LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
@@ -107,9 +111,9 @@ public class LevelCommands
             {
                 try
                 {
-                    int currentXP = LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild());
-                    int targetXP = Integer.parseInt(args[2]);
-                    int diff = targetXP - currentXP;
+                    double currentXP = LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild());
+                    double targetXP = Double.parseDouble(args[2]);
+                    double diff = targetXP - currentXP;
                     LevelUtils.addXP(diff, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
                     BotUtils.SendMessage(event.getChannel(), event.getMessage().getMentions().get(0).getName() + "'s XP was set to " + LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()));
@@ -128,7 +132,7 @@ public class LevelCommands
             {
                 try
                 {
-                    int xpRequired = LevelUtils.xpRequiredForLevel(Integer.parseInt(args[2]), event.getMessage().getMentions().get(0), event.getGuild());
+                    double xpRequired = LevelUtils.xpRequiredForLevel(Integer.parseInt(args[2]), event.getMessage().getMentions().get(0), event.getGuild());
 
                     LevelUtils.addXP(xpRequired, event.getMessage().getMentions().get(0), event.getGuild());
                     LevelUtils.updateRoles(event.getMessage().getMentions().get(0), event.getGuild());
@@ -287,6 +291,44 @@ public class LevelCommands
             }
         };
 
+        Command awardXPForVoiceMembers = new Command("awardXPForVoicechatUsers", "Gives a set amount of XP to all users in the command executor's voice channel.", new String[]{"~awardXPForVoicechatUsers <amount>"}, true)
+        {
+            public void Execute(MessageReceivedEvent event, String[] args)
+            {
+                if(args.length == 2)
+                {
+                    //Get the voice channel of the user
+                    //Returns null if the user is not in a voice channel.
+                    IVoiceChannel currentVC = event.getAuthor().getVoiceStateForGuild(event.getGuild()).getChannel();
+
+                    //Check if currentVC returned null (are they in a voice channel)
+                    if(currentVC != null)
+                    {
+                        //Return list of IUsers of all users connected to channel
+                        ArrayList<IUser> connectedUsers = (ArrayList<IUser>) currentVC.getConnectedUsers();
+
+                        //Loop through all connected users and grant the set amount of XP.
+                        for(IUser u: connectedUsers)
+                        {
+                            //Add the set amount of XP to each user.
+                            LevelUtils.addXP(Double.parseDouble(args[1]), u, event.getGuild());
+                        }
+
+                        //Add message giving confirmation that XP has been added.
+                        BotUtils.SendMessage(event.getChannel(), "Successfully added " + args[1] + "XP to " + connectedUsers.size() + " user(s).");
+                    }
+                    else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "You need to be in a voice channel for this command!");
+                    }
+                }
+                else
+                {
+                    BotUtils.SendMessage(event.getChannel(), "Please only use one argument!");
+                }
+            }
+        };
+
         commandMap.put(rankCommand.commandName, rankCommand);
         commandMap.put(xpCommand.commandName, xpCommand);
         commandMap.put(levelCommand.commandName, levelCommand);
@@ -298,5 +340,6 @@ public class LevelCommands
         commandMap.put(motmRoll.commandName, motmRoll);
         commandMap.put(viewCurrentMultipliers.commandName, viewCurrentMultipliers);
         commandMap.put(toggleMotm.commandName, toggleMotm);
+        commandMap.put(awardXPForVoiceMembers.commandName, awardXPForVoiceMembers);
     }
 }
