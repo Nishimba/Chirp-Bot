@@ -315,7 +315,7 @@ class CommandHandler
                 String match = BotUtils.StringFunnel(commandMap, commandArgs[0].substring(1));
                 if (match == null)
                 {
-                    System.out.println("Sorry, I don't know how to do that! If you need help, try the ~help command!");
+                    BotUtils.SendMessage(event.getChannel(), "Sorry, I didn't recognise that command! Please use ~help to see available commands!");
                 }
                 else
                 {

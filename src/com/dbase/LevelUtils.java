@@ -26,6 +26,11 @@ import java.util.List;
 
 public class LevelUtils
 {
+    //Const Variables
+    public static final double MIN_XP_PER_MESSAGE = 15.0;
+    public static final double MAX_XP_PER_MESSAGE = 25.0;
+
+    //Flexible Variables
     private static Connection levelConn;
     private static List<IGuild> guildList;
 
@@ -42,7 +47,6 @@ public class LevelUtils
         levelConn = conn;
         guildList = guilds;
         CreateLevelsDB();
-        CreateMultipliersDB();
         CreateRolesDB();
     }
 
@@ -58,7 +62,7 @@ public class LevelUtils
                 String createLevelsTable = "CREATE TABLE IF NOT EXISTS levels_" + guildID + "(" +
                         "UserID BIGINT NOT NULL," +
                         "Level INT NOT NULL," +
-                        "XPAmount INT NOT NULL," +
+                        "XPAmount DOUBLE(10,2) NOT NULL," +
                         "PRIMARY KEY(UserID));";
 
                 createStmt.execute(createLevelsTable);
@@ -68,30 +72,6 @@ public class LevelUtils
             }
         }
         catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    private void CreateMultipliersDB()
-    {
-        try
-        {
-            Statement createStmt = levelConn.createStatement();
-
-            for (IGuild guild : guildList)
-            {
-                String guildID = guild.getStringID();
-                String createMultipliersTable = "CREATE TABLE IF NOT EXISTS multipliers_" + guildID + "(" +
-                        "RoleID BIGINT NOT NULL," +
-                        "XPMultiplier DOUBLE," +
-                        "IsMOTM BOOLEAN DEFAULT FALSE," +
-                        "PRIMARY KEY(RoleID));";
-
-                createStmt.execute(createMultipliersTable);
-            }
-        }
-        catch (SQLException e)
         {
             e.printStackTrace();
         }
@@ -109,6 +89,8 @@ public class LevelUtils
                 String createRolesTable = "CREATE TABLE IF NOT EXISTS roles_" + guildID + "(" +
                         "RoleID BIGINT NOT NULL," +
                         "LevelCutoff INT," +
+                        "XPMultiplier DOUBLE," +
+                        "IsMOTM BOOLEAN DEFAULT FALSE," +
                         "PRIMARY KEY(RoleID));";
 
                 createStmt.execute(createRolesTable);
@@ -126,12 +108,13 @@ public class LevelUtils
         levelBarriers[1] = 250;
         for (int i = 2; i < 100; i++)
         {
-            levelBarriers[i] = levelBarriers[i - 1] + (((4.0 * (i - 1)) / 5.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 250.0);
+            levelBarriers[i] = Math.floor(levelBarriers[i - 1] + (((4.0 * (i - 1)) / 5.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 250.0));
+            System.out.println("Level " + i + " requires " + levelBarriers[i] + "XP.");
         }
 
         for(int i = 100; i <501; i++)
         {
-            levelBarriers[i] = levelBarriers[i-1] + (76309.8);
+            levelBarriers[i] = levelBarriers[i-1] + (levelBarriers[99]);
         }
 
         levelBarriers[501] = Integer.MAX_VALUE;
@@ -176,7 +159,7 @@ public class LevelUtils
 
             if(currentLevel != 501)
             {
-                query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff<=" + tempLevel +" ORDER BY LevelCutoff DESC;";
+                query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff <=" + tempLevel +" ORDER BY LevelCutoff DESC;";
 
                 ResultSet results = createStmt.executeQuery(query);
 
@@ -188,11 +171,9 @@ public class LevelUtils
             }
 
             query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff<=" + currentLevel +" ORDER BY LevelCutoff DESC;";
-
             ResultSet results3 = createStmt.executeQuery(query);
 
             long prestigeRole = -1;
-
             if(results3.next())
             {
                 prestigeRole = results3.getLong(1);
@@ -234,8 +215,19 @@ public class LevelUtils
         {
             Statement createStmt = levelConn.createStatement();
 
-            String query = "INSERT INTO roles_" + guild.getStringID() + " VALUES(" + role.getStringID() + ", " + level + ") ON DUPLICATE KEY UPDATE LevelCutoff='" + level + "';";
+            String query = "INSERT INTO roles_" + guild.getStringID() + " VALUES (" + role.getStringID() + ", ";
 
+            //If the level given is set to 0, make the level cutoff value NULL. (Effectively disabling the level cutoff)
+            if (level == 0)
+            {
+                query += "NULL";
+            }
+            else
+            {
+                query += level;
+            }
+
+            query += ", " + 1.0 + ", FALSE) ON DUPLICATE KEY UPDATE LevelCutoff='" + level + "';";
             createStmt.execute(query);
         }
         catch (SQLException e)
@@ -256,28 +248,25 @@ public class LevelUtils
                 double totalMultiplier = 1.0;
                 for(IRole role : event.getAuthor().getRolesForGuild(event.getGuild()))
                 {
-                    totalMultiplier *= getMultiplier(event.getGuild(), role);
+                    totalMultiplier *= getMultiplierForRole(event.getGuild(), role);
                 }
 
-                // Add random XP (15 - 25) by multipliers
-                Random rand = new Random();
-                int xpToAdd = rand.nextInt(11) + 15;
-
-                addXP((int)(xpToAdd * totalMultiplier), event.getAuthor(), event.getGuild());
+                // Add random XP between min and max by multipliers
+                addXP((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier), event.getAuthor(), event.getGuild());
             }
         }
     }
 
-    static void addXP(int amount, IUser user, IGuild guild)
+    static void addXP(double amount, IUser user, IGuild guild)
     {
         try
         {
             Statement createStmt = levelConn.createStatement();
 
             // Get current XP of message author
-            int currentXP = getCurrentXP(user, guild);
+            double currentXP = getCurrentXP(user, guild);
 
-            double newXP = (double)currentXP + (double)amount;
+            double newXP = currentXP + amount;
 
             if(newXP < 0)
             {
@@ -343,26 +332,39 @@ public class LevelUtils
         }
     }
 
-    static int getCurrentXP(IUser user, IGuild guild)
+    private static double addNewUserToDB(ResultSet newUserSet, IUser user, IGuild guild, Statement createStmt, String sqlQuery)
+    {
+        String userID = user.getStringID();
+        String guildID = guild.getStringID();
+
+        try
+        {
+            if(!newUserSet.next() && !user.isBot()) {
+                System.out.println("Adding new user to table");
+                String addUserToDB = "INSERT INTO levels_" + guildID + " (UserID, Level, XPAmount) VALUES (" + userID + ", 1, 0);";
+                createStmt.execute(addUserToDB);
+                newUserSet = createStmt.executeQuery(sqlQuery);
+                newUserSet.next();
+            }
+
+            return newUserSet.getDouble(1);
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    static double getCurrentXP(IUser user, IGuild guild)
     {
         try
         {
             Statement createStmt = levelConn.createStatement();
-
-            String guildID = guild.getStringID();
-            String authorID = user.getStringID();
-            String getUserXP = "SELECT XPAmount FROM levels_" + guildID + " WHERE UserID=" + authorID + ";";
-
+            String getUserXP = "SELECT XPAmount FROM levels_" + guild.getStringID() + " WHERE UserID=" + user.getStringID() + ";";
             ResultSet userXPSet = createStmt.executeQuery(getUserXP);
 
-            if(!userXPSet.next() && !user.isBot()) {
-                System.out.println("Adding new user to table");
-                String addUserToDB = "INSERT INTO levels_" + guildID + " (UserID, Level, XPAmount) VALUES (" + authorID + ", 1, 0);";
-                createStmt.execute(addUserToDB);
-                userXPSet = createStmt.executeQuery(getUserXP);
-                userXPSet.next();
-            }
-            return userXPSet.getInt(1);
+            return addNewUserToDB(userXPSet, user, guild, createStmt, getUserXP);
         }
         catch (SQLException e)
         {
@@ -376,21 +378,12 @@ public class LevelUtils
         try
         {
             Statement createStmt = levelConn.createStatement();
-
-            String guildID = guild.getStringID();
-            String authorID = user.getStringID();
-            String getUserLevel = "SELECT Level FROM levels_" + guildID + " WHERE UserID=" + authorID + ";";
-
+            String getUserLevel = "SELECT Level FROM levels_" + guild.getStringID() + " WHERE UserID=" + user.getStringID() + ";";
             ResultSet userLevelSet = createStmt.executeQuery(getUserLevel);
 
-            if(!userLevelSet.next() && !user.isBot()) {
-                System.out.println("Adding new user to table");
-                String addUserToDB = "INSERT INTO levels_" + guildID + " (UserID, Level, XPAmount) VALUES (" + authorID + ", 1, 0);";
-                createStmt.execute(addUserToDB);
-                userLevelSet = createStmt.executeQuery(getUserLevel);
-                userLevelSet.next();
-            }
-            return userLevelSet.getInt(1);
+            //Down-cast double to return as an int
+            //E.g. 6.9 returns 6;
+            return (int) addNewUserToDB(userLevelSet, user, guild, createStmt, getUserLevel);
         }
         catch (SQLException e)
         {
@@ -401,12 +394,12 @@ public class LevelUtils
 
     private static int calculateCurrentLevel(IUser user, IGuild guild)
     {
-        int xp = getCurrentXP(user, guild);
+        double xp = getCurrentXP(user, guild);
         int level = 0;
 
         for (double levelBarrier : levelBarriers)
         {
-            if (xp >= (int)levelBarrier)
+            if (xp >= levelBarrier)
             {
                 level++;
             }
@@ -414,7 +407,7 @@ public class LevelUtils
         return level;
     }
 
-    static int xpRequiredForLevel(int targetLevel, IUser user, IGuild guild)
+    static double xpRequiredForLevel(int targetLevel, IUser user, IGuild guild)
     {
         if(targetLevel < 1)
         {
@@ -425,8 +418,8 @@ public class LevelUtils
             targetLevel = 502;
         }
 
-        int xp = getCurrentXP(user, guild);
-        int xpNeeded = (int)levelBarriers[targetLevel - 1];
+        double xp = getCurrentXP(user, guild);
+        double xpNeeded = levelBarriers[targetLevel - 1];
 
         return xpNeeded - xp;
     }
@@ -439,7 +432,7 @@ public class LevelUtils
         return upperXP - lowerXP;
     }
 
-    private static int xpProgress(int level, IUser user, IGuild guild)
+    private static double xpProgress(int level, IUser user, IGuild guild)
     {
         int lowerXP = (int)levelBarriers[level - 1];
 
@@ -471,7 +464,7 @@ public class LevelUtils
         }
     }
 
-    static void addMultiplier(IGuild guild, IRole role, double multiplier, boolean motm)
+    static void addMultiplier(IGuild guild, IRole role, double multiplier)
     {
         String guildID = guild.getStringID();
         String roleID = role.getStringID();
@@ -479,18 +472,7 @@ public class LevelUtils
         try
         {
             Statement createStmt = levelConn.createStatement();
-            String addMulti;
-
-            if (!motm)
-            {
-                addMulti = "INSERT INTO multipliers_" + guildID + " (RoleID, XPMultiplier) VALUES (" + roleID + ", " + multiplier + ") ON DUPLICATE KEY UPDATE XPMultiplier='" + multiplier + "';";
-            }
-            else
-            {
-                addMulti = "INSERT INTO multipliers_" + guildID + " VALUES (" + roleID + ", " + multiplier + ", TRUE) ON DUPLICATE KEY UPDATE XPMultiplier='" + multiplier + "';";
-            }
-
-            createStmt.execute(addMulti);
+            createStmt.execute("INSERT INTO roles_" + guildID + " (RoleID, XPMultiplier) VALUES (" + roleID + ", " + multiplier + ") ON DUPLICATE KEY UPDATE XPMultiplier='" + multiplier + "';");
         }
         catch (SQLException e)
         {
@@ -498,17 +480,14 @@ public class LevelUtils
         }
     }
 
-    static double getMultiplier(IGuild guild, IRole role)
+    static double getMultiplierForRole(IGuild guild, IRole role)
     {
         String guildID = guild.getStringID();
 
         try
         {
             Statement createStmt = levelConn.createStatement();
-
-            String getMulti = "SELECT XPMultiplier FROM multipliers_" + guildID + " WHERE RoleID=" + role.getStringID() + ";";
-
-            ResultSet multiSet = createStmt.executeQuery(getMulti);
+            ResultSet multiSet = createStmt.executeQuery("SELECT XPMultiplier FROM roles_" + guildID + " WHERE RoleID=" + role.getStringID() + ";");
 
             if(multiSet.next())
             {
@@ -660,38 +639,58 @@ public class LevelUtils
 
     private static File getAvatar(IUser user)
     {
+        /*
+        TODO figure out bugs with some types of Gifs (e.g. the one Daalekz is using with the bird going down a rope)
+        this error is caused regardless of the URL acquision method (using this new code or the existing code)
+        so it might be as a result of the GIF creation code rather than this method
+        */
         try
         {
-            String fileType = "gif";
             InputStream is;
             URL avatarURL;
             URLConnection connection;
 
-            try
+            //Split URL and file ending
+            String[] splitURL = user.getAvatarURL().split("\\.");
+            StringBuilder combinedURL = new StringBuilder();
+            String fileEnding = "";
+
+            for(int i = 0; i < splitURL.length; i++)
             {
-                avatarURL = new URL("https://cdn.discordapp.com/avatars/" + user.getStringID() + "/" + user.getAvatar() + "." + fileType + "?size=256");
-
-                // 403 error avoided :sunglasses:
-                connection = avatarURL.openConnection();
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
-                connection.connect();
-
-                is = connection.getInputStream();
-            }
-            catch (IOException e)
-            {
-                fileType = "png";
-                avatarURL = new URL("https://cdn.discordapp.com/avatars/" + user.getStringID() + "/" + user.getAvatar() + "." + fileType + "?size=256");
-
-                // 403 error avoided :sunglasses:
-                connection = avatarURL.openConnection();
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
-                connection.connect();
-
-                is = connection.getInputStream();
+                //If this isn't the last period in the URL, combine it all together.
+                if(i == splitURL.length - 1)
+                {
+                    //This is the last period of the URL, so these characters are the file ending of the given URL
+                    fileEnding = splitURL[i];
+                }
+                else
+                {
+                    combinedURL.append(splitURL[i]);
+                    combinedURL.append(".");
+                }
             }
 
-            OutputStream os = new FileOutputStream(new File("res/avatar." + fileType));
+            //Now we have split up the URL and acquired the file type, assess if it is a GIF avatar or not and re-add it to the filepath.
+            if(!fileEnding.equals("gif"))
+            {
+                combinedURL.append("png");
+            }
+            else
+            {
+                combinedURL.append(fileEnding);
+            }
+
+            //Create URL object and add size query to it as well
+            avatarURL = new URL(combinedURL.toString() + "?size=256");
+
+            // 403 error avoided :sunglasses:
+            connection = avatarURL.openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+            connection.connect();
+
+            is = connection.getInputStream();
+
+            OutputStream os = new FileOutputStream(new File("res/avatar." + fileEnding));
 
             byte[] b = new byte[2048];
             int length;
@@ -703,7 +702,7 @@ public class LevelUtils
             is.close();
             os.close();
 
-            return new File("res/avatar." + fileType);
+            return new File("res/avatar." + fileEnding);
         }
         catch(Exception e)
         {
@@ -877,7 +876,7 @@ public class LevelUtils
         rankGraphic.drawString(username, 300, 180);
 
         // Discriminator
-        rankGraphic.setColor(secondTextColor);
+        rankGraphic.setColor(textColor);
         rankGraphic.setFont(new Font(fontName, Font.PLAIN, 35));
         rankGraphic.drawString("#" + user.getDiscriminator(), rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) + 310, 180);
 
@@ -1147,10 +1146,8 @@ public class LevelUtils
     {
         try {
             Statement createStmt = levelConn.createStatement();
-            String guildID = guild.getStringID();
-            String query = "SELECT * FROM multipliers_" + guildID + " WHERE IsMOTM = TRUE;";
+            ResultSet motmRoles = createStmt.executeQuery("SELECT * FROM roles_" + guild.getStringID() + " WHERE IsMOTM = TRUE;");
 
-            ResultSet motmRoles = createStmt.executeQuery(query);
             motmRoles.next();
             return guild.getRoleByID(motmRoles.getLong(1));
         }
@@ -1171,7 +1168,7 @@ public class LevelUtils
         ArrayList<IRole> multiplierRoles = new ArrayList<>(); //Blank list of roles to store roles that actually give multipliers
         for(IRole role: user.getRolesForGuild(guild))
         {
-            if(getMultiplier(guild, role) != 1.0)
+            if(getMultiplierForRole(guild, role) != 1.0)
             {
                 //Since this role does not have a standard 1.0 multiplier, we can add it to the list of roles the user has that gives multipliers
                 multiplierRoles.add(role);
@@ -1185,7 +1182,7 @@ public class LevelUtils
             //Print these to the embed -- add each role to the embed and add what multiplier it gives
             for(IRole role: multiplierRoles)
             {
-                embed.appendField(getMultiplier(guild, role) + "x", role.mention(), true);
+                embed.appendField(getMultiplierForRole(guild, role) + "x", role.mention(), true);
             }
         }
         else
@@ -1194,10 +1191,97 @@ public class LevelUtils
             embed.appendField("Roles", "You do not seem to have any roles that grant XP multipliers :(", false);
         }
 
+        //Calculate the total XP rate of the user.
+        double totalMultiplier = 1.0;
+        for(IRole role: multiplierRoles)
+        {
+            totalMultiplier *= getMultiplierForRole(guild, role);
+        }
+
         //Append the total multiplier of the current user.
-        embed.appendField("Test", "This should be a separated field", false);
+        embed.appendField("Total XP Multiplier: " + totalMultiplier + "x", "You will earn between " + (MIN_XP_PER_MESSAGE * totalMultiplier) + "xp - " + (MAX_XP_PER_MESSAGE * totalMultiplier) + "xp per message.", false);
 
         //Build and send the embed
         BotUtils.SendEmbed(channel, embed.build());
+    }
+
+    static int toggleMOTM(IGuild guild, IRole role)
+    {
+         /*
+            Return codes/values for the command:
+            0 - MOTM role was successfully swapped
+            1 - User is trying to enter a role as MOTM when one already exists
+            2 - New role was set as MOTM
+         */
+        int returnStatus;
+
+        //Check if a different role is entered as MOTM already
+        try
+        {
+            Statement createStmt = levelConn.createStatement();
+            ResultSet motmSet = createStmt.executeQuery("SELECT * FROM roles_" + guild.getStringID() + ";");
+            boolean toggleMOTM = false;
+            boolean preexistingMOTM = false;
+            String roleString = "0";
+
+            while(motmSet.next())
+            {
+                roleString = motmSet.getString("RoleID");
+
+                if(motmSet.getBoolean("isMOTM"))
+                {
+                    //The role at this row is marked as the MOTM role.
+                    if(!roleString.equals(role.getStringID()))
+                    {
+                        //The role marked with MOTM in the database is not the role being toggled (an MOTM role already exists)
+                        //Therefore, we should inform the user a preexisting MOTM role exists and throw an error.
+                        preexistingMOTM = true;
+                        toggleMOTM = false;
+                    }
+                    else
+                    {
+                        //The user has entered the role that is already marked as MOTM -- so they want to toggle it.
+                        toggleMOTM = true;
+                    }
+                }
+            }
+
+
+            //Toggle given role
+            Statement toggleStmt = levelConn.createStatement();
+            String roleUpdateStatement = "UPDATE roles_" + guild.getStringID() + " SET IsMOTM= ";
+
+            if (!preexistingMOTM)
+            {
+                if (toggleMOTM)
+                {
+                    //This role is already marked as MOTM and the user wishes to toggle it.
+                    roleUpdateStatement += "'0'";
+                    returnStatus = 0;
+                }
+                else
+                {
+                    //This role is not MOTM, and is what the user wants to set as the MOTM role of the server/guild.
+                    roleUpdateStatement += "'1'";
+                    returnStatus = 2;
+                }
+
+                roleUpdateStatement += " WHERE (RoleID = '" + roleString + "');"; //Build last part of SQL query.
+                toggleStmt.executeUpdate(roleUpdateStatement); //Execute given query.
+            }
+            else
+            {
+                //The role marked with MOTM in the database is not the role being toggled (an MOTM role already exists)
+                //Therefore, we should inform the user a preexisting MOTM role exists and throw an error.
+                returnStatus = 1;
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+
+        return returnStatus; //Return code generated.
     }
 }
