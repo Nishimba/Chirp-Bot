@@ -1213,7 +1213,7 @@ public class LevelUtils
         try
         {
             Statement createStmt = levelConn.createStatement();
-            ResultSet motmSet = createStmt.executeQuery("SELECT * FROM roles_" + guild.getStringID() + " WHERE RoleID=" + role.getStringID() + ";");
+            ResultSet motmSet = createStmt.executeQuery("SELECT * FROM roles_" + guild.getStringID() + ";");
             boolean toggleMOTM = false;
             boolean preexistingMOTM = false;
             String roleString = "0";
