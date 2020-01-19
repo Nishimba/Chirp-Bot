@@ -6,6 +6,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Discord4J-2.10.1-shaded-v2" level="project" />
+    <orderEntry type="library" name="Discord4J-2.10.1-shaded-v5" level="project" />
   </component>
 </module>
