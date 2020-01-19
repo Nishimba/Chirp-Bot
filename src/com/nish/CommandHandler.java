@@ -230,7 +230,7 @@ class CommandHandler
             }
         };
 
-        Command stopCommand = new Command("stop", "Exits the bot safely.", null, false)
+        Command stopCommand = new Command("stop", "Exits the bot safely.", null, true)
         {
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {

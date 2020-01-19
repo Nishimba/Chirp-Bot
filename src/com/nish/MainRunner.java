@@ -59,6 +59,7 @@ public class MainRunner
 
         //setup the database info
         new DatabaseSetup(BotUtils.GetGuilds(cli));
+        System.out.println("Finished Database Setup.");
 
         //Set Playing message
         cli.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "Type ~help for help!");
