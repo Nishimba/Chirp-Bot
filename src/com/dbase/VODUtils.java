@@ -48,6 +48,9 @@ class VODUtils
                         "Feedback MEDIUMTEXT," +
                         "PRIMARY KEY(VOD_ID));";
 
+                System.out.println("Created VOD DB for server " + guildID + " with query: ");
+                System.out.println(createVODTable);
+
                 createStmt.execute(createVODTable);
             }
         }

@@ -46,6 +46,13 @@ public class LevelUtils
     {
         levelConn = conn;
         guildList = guilds;
+
+        //Print Guilds connected.
+        for(IGuild g: guildList)
+        {
+            System.out.println("Connected to server " + g.getStringID() + "(" + g.getName() + ")");
+        }
+
         CreateLevelsDB();
         CreateRolesDB();
     }
@@ -62,10 +69,13 @@ public class LevelUtils
                 String createLevelsTable = "CREATE TABLE IF NOT EXISTS levels_" + guildID + "(" +
                         "UserID BIGINT NOT NULL," +
                         "Level INT NOT NULL," +
-                        "XPAmount DOUBLE(15,2) NOT NULL," +
+                        "XPAmount DOUBLE(10,2) NOT NULL," +
                         "PRIMARY KEY(UserID));";
 
                 createStmt.execute(createLevelsTable);
+
+                System.out.println("Created levels DB for server " + guild.getStringID() + " with query: ");
+                System.out.println(createLevelsTable);
             }
         }
         catch (Exception e)
@@ -91,9 +101,12 @@ public class LevelUtils
                         "PRIMARY KEY(RoleID));";
 
                 createStmt.execute(createRolesTable);
+
+                System.out.println("Created roles DB for server " + guild.getStringID() + " with query: ");
+                System.out.println(createRolesTable);
             }
         }
-        catch (SQLException e)
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -313,7 +326,8 @@ public class LevelUtils
                     }
                 }
 
-                BotUtils.SendMessage(user.getOrCreatePMChannel(), msg);
+                //TODO Un-comment this line to allow people to get DM'd when they level up.
+                //BotUtils.SendMessage(user.getOrCreatePMChannel(), msg);
 
                 // Update SQL Table with new level
                 String updateLevel = "UPDATE levels_" + guild.getStringID() + " SET Level = "+ localLevel + " WHERE UserID=" + user.getStringID() + ";";
