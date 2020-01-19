@@ -4,10 +4,7 @@ import com.nish.BotUtils;
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.EmbedBuilder;
 
 import javax.imageio.ImageIO;
@@ -164,11 +161,11 @@ public class LevelUtils
             }
 
             String query;
-            long roleIDToAdd = - 1;
+            long roleIDToAdd = -1;
 
             if(currentLevel != 501)
             {
-                query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff <=" + tempLevel +" ORDER BY LevelCutoff DESC;";
+                query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff <=" + tempLevel +" AND LevelCutoff IS NOT NULL ORDER BY LevelCutoff DESC;";
 
                 ResultSet results = createStmt.executeQuery(query);
 
@@ -179,7 +176,7 @@ public class LevelUtils
                 }
             }
 
-            query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff<=" + currentLevel +" ORDER BY LevelCutoff DESC;";
+            query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff<=" + currentLevel +" AND LevelCutoff IS NOT NULL ORDER BY LevelCutoff DESC;";
             ResultSet results3 = createStmt.executeQuery(query);
 
             long prestigeRole = -1;
@@ -189,7 +186,7 @@ public class LevelUtils
                 user.addRole(guild.getRoleByID(results3.getLong(1)));
             }
 
-            query = "SELECT RoleID FROM roles_" + guild.getStringID() + ";";
+            query = "SELECT RoleID FROM roles_" + guild.getStringID() + " WHERE LevelCutoff IS NOT NULL;";
 
             ResultSet results2 = createStmt.executeQuery(query);
 
@@ -248,20 +245,23 @@ public class LevelUtils
     static void allocateXP(MessageReceivedEvent event)
     {
         // Not a bot
-        if (!event.getAuthor().isBot() && !event.getMessage().getContent().substring(0, 1).equals(BotUtils.BOT_PREFIX))
+        if(!event.getAuthor().isBot() && event.getMessage().getContent().length() > 0)
         {
-            // Check if 1min has passed since last msg
-            if(checkCooldown(event))
+            if (!event.getMessage().getContent().substring(0, 1).equals(BotUtils.BOT_PREFIX))
             {
-                // Get Multipliers for user
-                double totalMultiplier = 1.0;
-                for(IRole role : event.getAuthor().getRolesForGuild(event.getGuild()))
+                // Check if 1min has passed since last msg
+                if(checkCooldown(event))
                 {
-                    totalMultiplier *= getMultiplierForRole(event.getGuild(), role);
-                }
+                    // Get Multipliers for user
+                    double totalMultiplier = 1.0;
+                    for(IRole role : event.getAuthor().getRolesForGuild(event.getGuild()))
+                    {
+                        totalMultiplier += (getMultiplierForRole(event.getGuild(), role) - 1.0f);
+                    }
 
-                // Add random XP between min and max by multipliers
-                addXP((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier), event.getAuthor(), event.getGuild());
+                    // Add random XP between min and max by multipliers
+                    addXP(Math.round((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier) * 100.0f) / 100.0f, event.getAuthor(), event.getGuild());
+                }
             }
         }
     }
@@ -1211,7 +1211,7 @@ public class LevelUtils
         }
 
         //Append the total multiplier of the current user.
-        embed.appendField("Total XP Multiplier: " + totalMultiplier + "x", "You will earn between " + (MIN_XP_PER_MESSAGE * totalMultiplier) + "xp - " + (MAX_XP_PER_MESSAGE * totalMultiplier) + "xp per message.", false);
+        embed.appendField("Total XP Multiplier: " + Math.round(totalMultiplier * 100.0f) / 100.0f + "x", "You will earn between " + Math.round((MIN_XP_PER_MESSAGE * totalMultiplier) * 100.0f) / 100.0f + "xp - " + Math.round((MAX_XP_PER_MESSAGE * totalMultiplier) * 100.0f) / 100.0f + "xp per message.", false);
 
         //Build and send the embed
         BotUtils.SendEmbed(channel, embed.build());

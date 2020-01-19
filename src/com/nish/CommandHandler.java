@@ -245,7 +245,7 @@ class CommandHandler
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {
                 //add the word to the file
-                BotUtils.AppendStrToFile("res/" + args[1] + ".txt", args[2]);
+                BotUtils.AppendStrToFile("res/" + args[1], args[2]);
                 BotUtils.SendMessage(event.getChannel(), args[2] + " Added!");
                 return true;
             }
