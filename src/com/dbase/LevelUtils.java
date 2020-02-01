@@ -4,9 +4,13 @@ import com.nish.BotUtils;
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.*;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageOutputStream;
@@ -16,7 +20,10 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
@@ -115,7 +122,7 @@ public class LevelUtils
         levelBarriers[1] = 250;
         for (int i = 2; i < 100; i++)
         {
-            levelBarriers[i] = Math.floor(levelBarriers[i - 1] + (((4.0 * (i - 1)) / 5.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 250.0));
+            levelBarriers[i] = Math.floor(levelBarriers[i - 1] + (((4.0 * (i - 1)) / 8.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 350.0));
         }
 
         for(int i = 100; i <501; i++)
@@ -254,10 +261,19 @@ public class LevelUtils
                 {
                     // Get Multipliers for user
                     double totalMultiplier = 1.0;
-                    for(IRole role : event.getAuthor().getRolesForGuild(event.getGuild()))
+
+                    //Obtain all roles that the user has on the server.
+                    List<IRole> userRoles = event.getAuthor().getRolesForGuild(event.getGuild());
+
+                    //If the user has roles, iterate through them and obtain the multiplier related to the role.
+                    if(!userRoles.isEmpty())
                     {
-                        totalMultiplier += (getMultiplierForRole(event.getGuild(), role) - 1.0f);
+                        for(IRole role : userRoles)
+                        {
+                            totalMultiplier += (getMultiplierForRole(event.getGuild(), role) - 1.0f);
+                        }
                     }
+
 
                     // Add random XP between min and max by multipliers
                     addXP(Math.round((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier) * 100.0f) / 100.0f, event.getAuthor(), event.getGuild());
@@ -326,8 +342,7 @@ public class LevelUtils
                     }
                 }
 
-                //TODO Un-comment this line to allow people to get DM'd when they level up.
-                //BotUtils.SendMessage(user.getOrCreatePMChannel(), msg);
+                BotUtils.SendMessage(user.getOrCreatePMChannel(), msg);
 
                 // Update SQL Table with new level
                 String updateLevel = "UPDATE levels_" + guild.getStringID() + " SET Level = "+ localLevel + " WHERE UserID=" + user.getStringID() + ";";
@@ -350,7 +365,7 @@ public class LevelUtils
         try
         {
             if(!newUserSet.next() && !user.isBot()) {
-                System.out.println("Adding new user to table");
+                System.out.println("Adding new user " + user.getName() + " to table");
                 String addUserToDB = "INSERT INTO levels_" + guildID + " (UserID, Level, XPAmount) VALUES (" + userID + ", 1, 0);";
                 createStmt.execute(addUserToDB);
                 newUserSet = createStmt.executeQuery(sqlQuery);
@@ -594,7 +609,7 @@ public class LevelUtils
                     {
                         return null;
                     }
-                    g.drawImage(drawRankCard(user, guild, avatar), 0, y, null);
+                    g.drawImage(drawRankCard(user, guild, avatar, null, -1), 0, y, null);
                     y += 300;
                 }
                 if(!userInSet)
@@ -611,7 +626,7 @@ public class LevelUtils
                     {
                         return null;
                     }
-                    g.drawImage(drawRankCard(user, guild, avatar), 0, y, null);
+                    g.drawImage(drawRankCard(user, guild, avatar, null, -1), 0, y, null);
                 }
             }
             else
@@ -649,12 +664,6 @@ public class LevelUtils
 
     private static File getAvatar(IUser user)
     {
-        /*
-        TODO figure out bugs with some types of Gifs (e.g. the one Daalekz is using with the bird going down a rope)
-        this error is caused regardless of the URL acquision method (using this new code or the existing code)
-        so it might be as a result of the GIF creation code rather than this method
-        */
-
         try
         {
             InputStream is;
@@ -737,7 +746,7 @@ public class LevelUtils
                 {
                     Image avatar = ImageIO.read(outputAvatar).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
 
-                    card = drawRankCard(user, guild, avatar);
+                    card = drawRankCard(user, guild, avatar, null, -1);
 
                     // Construct image
                     output = new File("res/card.png");
@@ -748,9 +757,9 @@ public class LevelUtils
                 {
                     ArrayList<BufferedImage> gifFrames = getFrames(outputAvatar);
                     ArrayList<BufferedImage> cardGif = new ArrayList<>();
-                    for(Image i : gifFrames)
+                    for(int i = 0; i < gifFrames.size(); i++)
                     {
-                        cardGif.add(drawRankCard(user, guild, i));
+                        cardGif.add(drawRankCard(user, guild, null, gifFrames, i));
                     }
 
                     output = makeGif(cardGif);
@@ -772,7 +781,7 @@ public class LevelUtils
         }
     }
 
-    private static BufferedImage drawRankCard(IUser user, IGuild guild, Image img) throws IOException
+    private static BufferedImage drawRankCard(IUser user, IGuild guild, Image still, ArrayList<BufferedImage> frames, int index) throws IOException
     {
         int imageWidth = 1000;
         int imageHeight = 300;
@@ -818,7 +827,17 @@ public class LevelUtils
         rankGraphic.fillRoundRect(0, 0, imageWidth, imageHeight, 10, 10);
 
         // Avatar
-        rankGraphic.drawImage(img, 50, 50, null);
+        if(index == -1)
+        {
+            rankGraphic.drawImage(still, 50, 50, null);
+        }
+        else
+        {
+            for(int i = 0; i <= index; i++)
+            {
+                rankGraphic.drawImage(frames.get(i), 50, 50, null);
+            }
+        }
 
         // Make Avatar Circle
         rankGraphic.setColor(backgroundColor);
@@ -1111,7 +1130,7 @@ public class LevelUtils
     {
         ArrayList<BufferedImage> frames = new ArrayList<>();
 
-        ImageReader ir = new GIFImageReader(new GIFImageReaderSpi());
+        GIFImageReader ir = new GIFImageReader(new GIFImageReaderSpi());
 
         ir.setInput(ImageIO.createImageInputStream(gif));
 
@@ -1121,7 +1140,7 @@ public class LevelUtils
         for(int i = 0; i < ir.getNumImages(true); i++)
         {
             Image temp = ir.read(i).getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-            BufferedImage tempBuff = new BufferedImage(temp.getWidth(null), temp.getHeight(null), BufferedImage.TYPE_INT_RGB);
+            BufferedImage tempBuff = new BufferedImage(temp.getWidth(null), temp.getHeight(null), BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = tempBuff.createGraphics();
             g.drawImage(temp, null, null);
             frames.add(tempBuff);
@@ -1138,9 +1157,12 @@ public class LevelUtils
 
         GifSequenceWriter writer = new GifSequenceWriter(output, frames.get(0).getType(), gifDelayTime, true);
 
-        for(BufferedImage i : frames)
+        //for(BufferedImage i : frames)
+        for(int i = 0; i < frames.size(); i++)
         {
-            writer.writeToSequence(i);
+            //File outputFile2 = new File("frame" + i + ".png");
+            //ImageIO.write(frames.get(i), "png", outputFile2);
+            writer.writeToSequence(frames.get(i));
         }
 
         writer.close();

@@ -4,6 +4,7 @@ import com.nish.BotUtils;
 import com.nish.Command;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
@@ -38,7 +39,9 @@ public class LevelCommands
             {
                 if(args.length == 1)
                 {
+                    IMessage message = event.getChannel().sendMessage("Our code monkeys are compiling your profile picture. Hang on a sec...");
                     File output = LevelUtils.createRankCard(event.getAuthor(), event.getGuild());
+                    message.delete();
                     BotUtils.SendFile(event.getChannel(), output);
                     return true;
                 }
@@ -46,7 +49,9 @@ public class LevelCommands
                 {
                     if(LevelUtils.getCurrentXP(event.getMessage().getMentions().get(0), event.getGuild()) != -1)
                     {
+                        IMessage message = event.getChannel().sendMessage("Our code monkeys are compiling your profile picture. Hang on a sec...");
                         File output = LevelUtils.createRankCard(event.getMessage().getMentions().get(0), event.getGuild());
+                        message.delete();
                         BotUtils.SendFile(event.getChannel(), output);
                         return true;
                     }

@@ -22,7 +22,7 @@ public class DatabaseSetup
 
             if (login != null)
             {
-                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?serverTimezone=ACT", login.get(0), login.get(1));
+                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/discord?serverTimezone=ACT&autoReconnect=true&failOverReadOnly=false&maxReconnects=10", login.get(0), login.get(1));
 
                 //Print Database Schema to test connectivity.
                 System.out.println("Database schema: " + conn.getCatalog());
