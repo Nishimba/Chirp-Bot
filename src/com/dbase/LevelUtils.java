@@ -123,11 +123,13 @@ public class LevelUtils
         for (int i = 2; i < 100; i++)
         {
             levelBarriers[i] = Math.floor(levelBarriers[i - 1] + (((4.0 * (i - 1)) / 8.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 350.0));
+            System.out.println("Level " + i + " requires " + levelBarriers[i] + "xp.");
         }
 
         for(int i = 100; i <501; i++)
         {
-            levelBarriers[i] = levelBarriers[i-1] + 76309; //TODO Remove this hard coded number. What is the significance of this value exactly?
+            levelBarriers[i] = levelBarriers[i-1] + (levelBarriers[99] - levelBarriers[98]);
+            System.out.println("Level " + i + " requires " + levelBarriers[i] + "xp.");
         }
 
         levelBarriers[501] = Integer.MAX_VALUE;
@@ -318,7 +320,7 @@ public class LevelUtils
 
                 if(localLevel > 500)
                 {
-                    msg += " You are now MAXED! " + guild.getEmojiByName("gemDiamond");
+                    msg += " You have now reached the XP cap! Congratulations!";
                 }
                 else
                 {
@@ -326,16 +328,16 @@ public class LevelUtils
                     switch (localLevel)
                     {
                         case 101:
-                            msg += " " + guild.getEmojiByName("gemTopaz");
+                            msg += " [Prestige 1]";
                             break;
                         case 201:
-                            msg += " " + guild.getEmojiByName("gemRuby");
+                            msg += " [Prestige 2]";
                             break;
                         case 301:
-                            msg += " " + guild.getEmojiByName("gemSapphire");
+                            msg += " [Prestige 3]";
                             break;
                         case 401:
-                            msg += " " + guild.getEmojiByName("gemEmerald");
+                            msg += " [Prestige 4]";
                             break;
                         default:
                             break;

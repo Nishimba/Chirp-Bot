@@ -311,15 +311,19 @@ class CommandHandler
             }
             else if (messageContent.startsWith(BotUtils.BOT_PREFIX) && !commandArgs[0].substring(1).isEmpty())//if the command has a prefix but isnt a registered command
             {
-                //check if the provided command is close to any other command
-                String match = BotUtils.StringFunnel(commandMap, commandArgs[0].substring(1));
-                if (match == null)
+                //Omit messages that have the bot prefix twice (since the default prefix is ~ and ~~ makes a strikethrough message
+                if(!messageContent.startsWith(BotUtils.BOT_PREFIX + BotUtils.BOT_PREFIX))
                 {
-                    BotUtils.SendMessage(event.getChannel(), "Sorry, I didn't recognise that command! Please use ~help to see available commands!");
-                }
-                else
-                {
-                    BotUtils.SendMessage(event.getChannel(), "I couldn't find that command! The closest I could find was ``" + match + "``");
+                    //check if the provided command is close to any other command
+                    String match = BotUtils.StringFunnel(commandMap, commandArgs[0].substring(1));
+                    if (match == null)
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "Sorry, I didn't recognise that command! Please use ~help to see available commands!");
+                    }
+                    else
+                    {
+                        BotUtils.SendMessage(event.getChannel(), "I couldn't find that command! The closest I could find was ``" + match + "``");
+                    }
                 }
             }
         }
