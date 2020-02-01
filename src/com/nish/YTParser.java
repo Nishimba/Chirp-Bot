@@ -21,7 +21,9 @@ public class YTParser
     //Read in the youtube Api Key
     private static final String APIKEY = Objects.requireNonNull(BotUtils.ReadLines("res/APIKEY.txt")).get(0);
 
+
     //If youtube video id encoding changes, these will no longer function.
+    //we don't actually have to pattern match the given url, but it is a faster preliminary step to filter out obviously bad urls.
     private final String youTubeUrlRegEx = "^(https?)?(://)?(www.)?(m.)?((youtube.com)|(youtu.be))/";
     private final String[] videoIdRegex = {"\\?vi?=([^&]*)", "watch\\?.*v=([^&]*)", "(?:embed|vi?)/([^/?]*)", "^([A-Za-z0-9\\-]*)"};
 
