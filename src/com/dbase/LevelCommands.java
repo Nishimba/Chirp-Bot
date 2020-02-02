@@ -209,7 +209,7 @@ public class LevelCommands
             }
         };
 
-        Command motmRoll = new Command("motmroll", "Rolls for a new member of the month based on the top 25 users in the leaderboard.", new String[]{"~motmroll"}, true)
+        Command motmRoll = new Command("motmroll", "Rolls for a new member of the month based on the top 25 users in the leaderboard, and any users in your current voice chat if you're in one.", new String[]{"~motmroll"}, true)
         {
             public boolean Execute(MessageReceivedEvent event, String[] args)
             {
@@ -227,21 +227,40 @@ public class LevelCommands
                 {
                     if (top25Users != null)
                     {
+                        ArrayList<Long> possibleUsers = new ArrayList<Long>();
+
+                        //Find out how many users there are in the resultSet.
                         while(top25Users.next())
                         {
                             i++;
                         }
-
                         top25Users.beforeFirst(); //Put the pointer of the set to before the first index
-                        //i is now equal to the amount of users in the top 25 list (just in-case there isn't 25 people in the leaderboards bc dead server lol)
-                        //Time to pick a WINNER!
-                        double rankIndex = LevelUtils.getRandomIntegerBetweenRange(1, i);
-                        for(int j = 0; j < rankIndex; j++)
+
+                        //Add all users in the top25 to the ArrayList.
+                        for(int j = 0; j < i; j++)
                         {
-                            top25Users.next();
+                            possibleUsers.add(top25Users.getLong(j));
                         }
 
-                        IUser winningUser = event.getGuild().getUserByID(top25Users.getLong(1)); //Gets the user from the randomly generated winning index
+                        //If the user is in the voice chat, add them to the list of entrants too
+                        IVoiceChannel currentVC = event.getAuthor().getVoiceStateForGuild(event.getGuild()).getChannel();
+                        if(currentVC != null)
+                        {
+                            //Return list of IUsers of all users connected to channel
+                            ArrayList<IUser> connectedUsers = (ArrayList<IUser>) currentVC.getConnectedUsers();
+
+                            for (IUser u: connectedUsers)
+                            {
+                                if(!u.getVoiceStateForGuild(event.getGuild()).isMuted() && !u.getVoiceStateForGuild(event.getGuild()).isDeafened())
+                                {
+                                    possibleUsers.add(u.getLongID());
+                                }
+                            }
+                        }
+
+                        //Time to pick a WINNER!
+                        int rankIndex = (int) LevelUtils.getRandomIntegerBetweenRange(1, possibleUsers.size()); //Pick a random index in the list of the winners
+                        IUser winningUser = event.getGuild().getUserByID(possibleUsers.get(rankIndex)); //Gets the user from the randomly generated winning index
                         //winningUser.addRole(LevelUtils.selectMOTMRole(event.getGuild())); //TODO: Add this back later.
 
                         BotUtils.SendMessage(event.getChannel(), winningUser.mention() + " was drawn as the winner of MOTM!");
@@ -339,8 +358,11 @@ public class LevelCommands
                         //Loop through all connected users and grant the set amount of XP.
                         for(IUser u: connectedUsers)
                         {
-                            //Add the set amount of XP to each user.
-                            LevelUtils.addXP(Double.parseDouble(args[1]), u, event.getGuild());
+                            if(!u.getVoiceStateForGuild(event.getGuild()).isMuted() && !u.getVoiceStateForGuild(event.getGuild()).isDeafened())
+                            {
+                                //Add the set amount of XP to each user.
+                                LevelUtils.addXP(Double.parseDouble(args[1]), u, event.getGuild());
+                            }
                         }
 
                         //Add message giving confirmation that XP has been added.

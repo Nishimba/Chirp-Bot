@@ -123,13 +123,11 @@ public class LevelUtils
         for (int i = 2; i < 100; i++)
         {
             levelBarriers[i] = Math.floor(levelBarriers[i - 1] + (((4.0 * (i - 1)) / 8.0) * (Math.pow((i - 1), 3.0 / 2.0) ) + 350.0));
-            System.out.println("Level " + i + " requires " + levelBarriers[i] + "xp.");
         }
 
         for(int i = 100; i <501; i++)
         {
             levelBarriers[i] = levelBarriers[i-1] + (levelBarriers[99] - levelBarriers[98]);
-            System.out.println("Level " + i + " requires " + levelBarriers[i] + "xp.");
         }
 
         levelBarriers[501] = Integer.MAX_VALUE;
@@ -783,8 +781,7 @@ public class LevelUtils
         }
     }
 
-    private static BufferedImage drawRankCard(IUser user, IGuild guild, Image still, ArrayList<BufferedImage> frames, int index) throws IOException
-    {
+    private static BufferedImage drawRankCard(IUser user, IGuild guild, Image still, ArrayList<BufferedImage> frames, int index) throws IOException {
         int imageWidth = 1000;
         int imageHeight = 300;
 
@@ -813,8 +810,7 @@ public class LevelUtils
         Color thirdTextColor = new Color(0.2f, 0.2f, 0.2f, 0.4f);
         Color highlightColor = new Color(user.getColorForGuild(guild).getRed(), user.getColorForGuild(guild).getGreen(), user.getColorForGuild(guild).getBlue());
 
-        if(highlightColor.equals(Color.BLACK))
-        {
+        if (highlightColor.equals(Color.BLACK)) {
             highlightColor = textColor;
         }
 
@@ -829,13 +825,14 @@ public class LevelUtils
         rankGraphic.fillRoundRect(0, 0, imageWidth, imageHeight, 10, 10);
 
         // Avatar
-        if(index == -1)
-        {
+        if (index == -1) {
             rankGraphic.drawImage(still, 50, 50, null);
         }
         else
         {
-            for(int i = 0; i <= index; i++)
+            //Draw the previous 40 frames of the user's PFP
+            int j = Math.max(0, index - 40); //If there are only 5 frames in a PFP, it will start from 0 and loop 0-5.
+            for(int i = j; i <= index; i++)
             {
                 rankGraphic.drawImage(frames.get(i), 50, 50, null);
             }
@@ -1137,7 +1134,15 @@ public class LevelUtils
         ir.setInput(ImageIO.createImageInputStream(gif));
 
         // This shit was NOT fun - Gets the delay between frames from the gifs metadata so that we can reconstruct at the right frame rate
-        gifDelayTime = Integer.parseInt(ir.getImageMetadata(0).getAsTree(ir.getImageMetadata(0).getNativeMetadataFormatName()).getChildNodes().item(1).getAttributes().getNamedItem("delayTime").getNodeValue());
+        try
+        {
+            gifDelayTime = Integer.parseInt(ir.getImageMetadata(0).getAsTree(ir.getImageMetadata(0).getNativeMetadataFormatName()).getChildNodes().item(1).getAttributes().getNamedItem("delayTime").getNodeValue());
+        }
+        catch (NullPointerException e)
+        {
+            //Use hardcoded value instead.
+            gifDelayTime = 10;
+        }
 
         for(int i = 0; i < ir.getNumImages(true); i++)
         {
