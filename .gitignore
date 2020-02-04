@@ -87,16 +87,16 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 #Tokens and keys
-res/BotToken.txt
-res/APIKEY.txt
-res/DBConfig.txt
+BotToken.txt
+APIKEY.txt
+DBConfig.txt
 out/
 .idea/
 
 #Generated assets
-res/card.gif
-res/avatar.png
-res/bigCard.png
-res/card.png
-res/avatar.gif
-res/avatar.webp
+*/res/card.gif
+*/res/avatar.png
+*/res/bigCard.png
+*/res/card.png
+*/res/avatar.gif
+*/res/avatar.webp
