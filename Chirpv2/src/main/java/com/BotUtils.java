@@ -1,132 +1,59 @@
 package com;
 
-import discord4j.core.*;
-import discord4j.core.object.entity.Channel;
-import discord4j.core.object.entity.TextChannel;
+import discord4j.core.DiscordClient;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
-
-
-/*
- * Created by Nishimba & Daalekz on 06/01/19
- * Basic Utilities for any class in the Bot to use
- */
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class BotUtils
 {
-    //Prefix for commands
-    public static String BOT_PREFIX = "~";
-
-    //Send message to a given channel, with some exception catching
-    public static void SendMessage(TextChannel channel, String message)
+    public static List<Guild> GetGuilds(DiscordClient cli)
     {
-        channel.createMessage(message).block();
+        return cli.getGuilds().collectList().block();
     }
 
-    //Send file to a given channel, with some exception catching
-    public static void SendFile(TextChannel channel, File image)
+    public static void SendMessage(MessageCreateEvent event, String message)
     {
-        RequestBuffer.request(() -> {
-            try
-            {
-                channel.sendFile(image);
-            }
-            catch (Exception e)
-            {
-                System.err.println("Message could not be sent with error: ");
-                e.printStackTrace();
-            }
-        });
+        event.getMessage().getChannel().flatMap(reply->reply.createMessage(message)).subscribe();
     }
 
     //Read lines from a given file(the file path is given as an argument) and output a list of each line of the file.
     public static List<String> ReadLines(String filePath)
     {
+
+        Logger logger = LoggerFactory.getLogger("File IO Logger");
         try
         {
             return Files.readAllLines(Paths.get(filePath));//return a list of all lines in the file
         }
         catch (Exception e)
         {
-            System.out.println("Error in ReadLines method.");
+            logger.error("Error reading file + " + filePath);
             e.printStackTrace();
             return null;
         }
     }
 
-    //method for appending lines to a files
-    static void AppendStrToFile(String filePath, String content)
+    public static String[] convertArgsToList(String[] args)
     {
-        try
+        //convert the array to string list
+        ArrayList<String> tempList = new ArrayList<>(Arrays.asList(args));
+        tempList.remove(0);
+        StringBuilder builder = new StringBuilder();
+        for(String s : tempList)
         {
-            //get the current contents of the file, and alphabetise it
-            List<String> alphaList = ReadLines(filePath);
-            if (alphaList != null)
-            {
-                alphaList.add(content);
-
-                Collections.sort(alphaList);
-
-                //create a writable string from the alphabetised contents
-                String tempString = "";
-                for (String s : alphaList)
-                {
-                    tempString = tempString.concat(s + "\r\n");
-                }
-
-                Files.write(Paths.get(filePath), tempString.getBytes(), StandardOpenOption.WRITE);//overwrite file with new list
-            }
-            else
-            {
-                System.out.println("Error writing to file.");
-            }
+            builder.append(s);
         }
-        catch(IOException e)
-        {
-            System.out.println("Exception occurred in AppendStrToFile");
-            e.printStackTrace();
-        }
-    }
+        String temp = builder.toString();
 
-    //Send embed to a given channel, with some exception catching
-    public static void SendEmbed(IChannel channel, EmbedObject embed)
-    {
-        //send message with error catching
-        RequestBuffer.request(() -> {
-            try
-            {
-                channel.sendMessage(embed);
-            }
-            catch (DiscordException e)
-            {
-                System.err.println("Message could not be sent with error: ");
-                e.printStackTrace();
-            }
-        });
-    }
-
-    //print the usages for commands
-    public static String OutputUsage(String CommandNameString, HashMap<String, Command> checkMap)
-    {
-        //append a new line followed by each usage
-        StringBuilder builtString = new StringBuilder();
-        for (String usage: checkMap.get(CommandNameString).usages)
-        {
-            builtString.append("\r\n").append(usage);
-        }
-
-        return builtString.toString();
-    }
-
-    //String funnel for commands
-    static String StringFunnel(HashMap<String,Command> checkMap, String checkString)
-    {
-        List<String> keys = new ArrayList<>(checkMap.keySet());
-        return ListCompare(keys, checkString, 0.85);
+        return temp.split(",");
     }
 
     //Method to compare all the entries in a list against a given string.
@@ -160,35 +87,5 @@ public class BotUtils
             return maxPairValue;
         }
         return null;
-    }
-
-    public static String[] convertArgsToList(String[] args)
-    {
-        //convert the array to string list
-        ArrayList<String> tempList = new ArrayList<>(Arrays.asList(args));
-        tempList.remove(0);
-        StringBuilder builder = new StringBuilder();
-        for(String s : tempList)
-        {
-            builder.append(s);
-        }
-        String temp = builder.toString();
-
-        return temp.split(",");
-    }
-
-    //A method that returns the list of all the guilds that the bot is a part of.
-    static List<IGuild> GetGuilds(IDiscordClient client)
-    {
-        return client.getGuilds();
-    }
-
-    //prints all guilds the bot is in
-    static void PrintGuilds(IDiscordClient client)
-    {
-        for(IGuild guild : client.getGuilds())
-        {
-            System.out.println(guild.getName());
-        }
     }
 }
