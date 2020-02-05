@@ -276,13 +276,13 @@ public class LevelUtils
 
 
                     // Add random XP between min and max by multipliers
-                    addXP(Math.round((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier) * 100.0f) / 100.0f, event.getAuthor(), event.getGuild());
+                    addXP(Math.round((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier) * 100.0f) / 100.0f, event.getAuthor(), event.getGuild(), event.getMessage().getContent());
                 }
             }
         }
     }
 
-    static void addXP(double amount, IUser user, IGuild guild)
+    static void addXP(double amount, IUser user, IGuild guild, String message)
     {
         try
         {
@@ -314,7 +314,7 @@ public class LevelUtils
             if(dbLevel != localLevel)
             {
                 // DM user level up message
-                String msg = "You have leveled up in " + guild.getName() + "!";
+                String msg = "You have leveled up in " + guild.getName() + "!" + "\n > " + message;
 
                 if(localLevel > 500)
                 {
