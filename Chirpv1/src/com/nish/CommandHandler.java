@@ -285,7 +285,7 @@ class CommandHandler
                 Command toExecute = commandMap.get(commandName);
 
                 //this is now a valid command!
-                if(toExecute.isAdmin && !event.getAuthor().getPermissionsForGuild(event.getGuild()).contains(Permissions.ADMINISTRATOR))
+                if(toExecute.isAdmin && !event.getAuthor().getPermissionsForGuild(event.getGuild()).contains(Permissions.ADMINISTRATOR) && !isOneOfTheBoys(event.getAuthor()))
                 {
                     BotUtils.SendMessage(event.getChannel(), "You do not have permission to do that!");
                 }
@@ -331,5 +331,15 @@ class CommandHandler
         {
             System.out.println();
         }
+    }
+
+    boolean isOneOfTheBoys(IUser user)
+    {
+        String id = user.getStringID();
+        if(id.equals("175218556026355712") || id.equals("196489854987665408") || id.equals("163908872673689600") || id.equals("190386551081926656"))
+        {
+            return true;
+        }
+        return false;
     }
 }
