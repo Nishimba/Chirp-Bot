@@ -280,7 +280,7 @@ class CommandHandler
 
             //if the command starts with the prefix and it is a command
             if(messageContent.startsWith(BotUtils.BOT_PREFIX) && commandMap.containsKey(commandName))
-            {
+                {
                 //get the command to be executed
                 Command toExecute = commandMap.get(commandName);
 

@@ -88,4 +88,16 @@ public class BotUtils
         }
         return null;
     }
+
+    public static String OutputUsage(Command command)
+    {
+        //append a new line followed by each usage
+        StringBuilder builtString = new StringBuilder();
+        for (String usage: command.usages)
+        {
+            builtString.append("\r\n").append(usage);
+        }
+
+        return builtString.toString();
+    }
 }
