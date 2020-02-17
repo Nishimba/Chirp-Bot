@@ -382,6 +382,22 @@ public class LevelCommands
             }
         };
 
+        Command toggleXP = new Command("toggleXP", "toggles xp in the channel it is used in", new String[]{"~toggleXP"}, true)
+        {
+            public boolean Execute(MessageReceivedEvent event, String[] args)
+            {
+                if(LevelUtils.toggleXPGainInChannel(event.getChannel()))
+                {
+                    BotUtils.SendMessage(event.getChannel(), "XP gains for this channel are now *ON*");
+                }
+                else
+                {
+                    BotUtils.SendMessage(event.getChannel(), "XP gains for this channel are now *OFF*");
+                }
+                return true;
+            }
+        };
+
         commandMap.put(rankCommand.commandName, rankCommand);
         commandMap.put(xpCommand.commandName, xpCommand);
         commandMap.put(levelCommand.commandName, levelCommand);
@@ -394,5 +410,6 @@ public class LevelCommands
         commandMap.put(viewCurrentMultipliers.commandName, viewCurrentMultipliers);
         commandMap.put(toggleMotm.commandName, toggleMotm);
         commandMap.put(awardXPForVoiceMembers.commandName, awardXPForVoiceMembers);
+        commandMap.put(toggleXP.commandName, toggleXP);
     }
 }

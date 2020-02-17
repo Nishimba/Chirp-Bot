@@ -38,6 +38,9 @@ public class LevelUtils
     private static Connection levelConn;
     private static List<IGuild> guildList;
 
+    //Channels that don't earn the user XP
+    private static List<IChannel> toggledChannels = new ArrayList<>();
+
     private static int gifDelayTime = 0;
 
     //Level up barriers
@@ -259,24 +262,27 @@ public class LevelUtils
                 // Check if 1min has passed since last msg
                 if(checkCooldown(event))
                 {
-                    // Get Multipliers for user
-                    double totalMultiplier = 1.0;
-
-                    //Obtain all roles that the user has on the server.
-                    List<IRole> userRoles = event.getAuthor().getRolesForGuild(event.getGuild());
-
-                    //If the user has roles, iterate through them and obtain the multiplier related to the role.
-                    if(!userRoles.isEmpty())
+                    if(!toggledChannels.contains(event.getChannel()))
                     {
-                        for(IRole role : userRoles)
+                        // Get Multipliers for user
+                        double totalMultiplier = 1.0;
+
+                        //Obtain all roles that the user has on the server.
+                        List<IRole> userRoles = event.getAuthor().getRolesForGuild(event.getGuild());
+
+                        //If the user has roles, iterate through them and obtain the multiplier related to the role.
+                        if (!userRoles.isEmpty())
                         {
-                            totalMultiplier += (getMultiplierForRole(event.getGuild(), role) - 1.0f);
+                            for (IRole role : userRoles)
+                            {
+                                totalMultiplier += (getMultiplierForRole(event.getGuild(), role) - 1.0f);
+                            }
                         }
+
+
+                        // Add random XP between min and max by multipliers
+                        addXP(Math.round((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier) * 100.0f) / 100.0f, event.getAuthor(), event.getGuild());
                     }
-
-
-                    // Add random XP between min and max by multipliers
-                    addXP(Math.round((getRandomIntegerBetweenRange(MIN_XP_PER_MESSAGE, MAX_XP_PER_MESSAGE) * totalMultiplier) * 100.0f) / 100.0f, event.getAuthor(), event.getGuild());
                 }
             }
         }
@@ -1236,7 +1242,7 @@ public class LevelUtils
         double totalMultiplier = 1.0;
         for(IRole role: multiplierRoles)
         {
-            totalMultiplier *= getMultiplierForRole(guild, role);
+            totalMultiplier += getMultiplierForRole(guild, role);
         }
 
         //Append the total multiplier of the current user.
@@ -1324,5 +1330,19 @@ public class LevelUtils
         }
 
         return returnStatus; //Return code generated.
+    }
+
+    static boolean toggleXPGainInChannel(IChannel chan)
+    {
+        if(toggledChannels.contains(chan))
+        {
+            toggledChannels.remove(chan);
+            return true;
+        }
+        else
+        {
+            toggledChannels.add(chan);
+            return false;
+        }
     }
 }
