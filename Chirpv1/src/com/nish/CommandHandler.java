@@ -336,10 +336,6 @@ class CommandHandler
     boolean isOneOfTheBoys(IUser user)
     {
         String id = user.getStringID();
-        if(id.equals("175218556026355712") || id.equals("196489854987665408") || id.equals("163908872673689600") || id.equals("190386551081926656"))
-        {
-            return true;
-        }
-        return false;
+        return id.equals("175218556026355712") || id.equals("196489854987665408") || id.equals("163908872673689600") || id.equals("190386551081926656");
     }
 }
