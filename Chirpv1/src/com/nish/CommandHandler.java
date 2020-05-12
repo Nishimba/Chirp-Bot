@@ -139,7 +139,7 @@ class CommandHandler
                 EmbedBuilder builder = new EmbedBuilder();//create an embed builder
                 builder.withAuthorName("Chirp's Map Dictionary");
                 List<String> fileList = BotUtils.ReadLines("res/Maps.txt");//read lines from a given filepath
-                String embedString = "";//the string that will contain the list
+                String embedString = ""; //the string that will contain the list
 
                 //for each string in the list, add it to the embed with the number and a newline
                 if (fileList != null)
@@ -251,6 +251,16 @@ class CommandHandler
             }
         };
 
+        Command pingCommand = new Command("ping", "Pings the bot to test for a response.", new String[]{"~ping"}, false)
+        {
+            public boolean Execute(MessageReceivedEvent event, String[] args)
+            {
+                //add the word to the file
+                BotUtils.SendMessage(event.getChannel(), "Pong!");
+                return true;
+            }
+        };
+
         //addition of commands to hashmap
         commandMap.put(helpCommand.commandName, helpCommand);
         commandMap.put(heroCommand.commandName, heroCommand);
@@ -260,6 +270,7 @@ class CommandHandler
         commandMap.put(timeCommand.commandName,timeCommand);
         commandMap.put(stopCommand.commandName, stopCommand);
         commandMap.put(editFileCommand.commandName, editFileCommand);
+        commandMap.put(pingCommand.commandName, pingCommand);
 
         new VODCommands(commandMap);
         new LevelCommands(commandMap);

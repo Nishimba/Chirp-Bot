@@ -138,22 +138,30 @@ public class LevelUtils
 
     private static int getRank(IUser user, IGuild guild)
     {
-        try
+        //TODO better handle users that have left the server.
+        if (user != null)
         {
-            Statement createStmt = levelConn.createStatement();
+            try
+            {
+                Statement createStmt = levelConn.createStatement();
 
-            String query = "SELECT a.RowNum FROM (SELECT ROW_NUMBER() OVER(ORDER BY XPAmount DESC) AS RowNum, UserID, Level, XPAmount FROM levels_" + guild.getStringID() + ") a WHERE UserID=" + user.getStringID() + ";";
+                String query = "SELECT a.RowNum FROM (SELECT ROW_NUMBER() OVER(ORDER BY XPAmount DESC) AS RowNum, UserID, Level, XPAmount FROM levels_" + guild.getStringID() + ") a WHERE UserID=" + user.getStringID() + ";";
 
-            ResultSet results = createStmt.executeQuery(query);
+                ResultSet results = createStmt.executeQuery(query);
 
-            results.next();
+                results.next();
 
-            return results.getInt(1);
+                return results.getInt(1);
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+                return -1;
+            }
         }
-        catch (SQLException e)
+        else
         {
-            e.printStackTrace();
-            return -1;
+            return 999;
         }
     }
 
@@ -389,37 +397,53 @@ public class LevelUtils
 
     static double getCurrentXP(IUser user, IGuild guild)
     {
-        try
+        //TODO better handle if users have left the server.
+        if (user != null)
         {
-            Statement createStmt = levelConn.createStatement();
-            String getUserXP = "SELECT XPAmount FROM levels_" + guild.getStringID() + " WHERE UserID=" + user.getStringID() + ";";
-            ResultSet userXPSet = createStmt.executeQuery(getUserXP);
+            try
+            {
+                Statement createStmt = levelConn.createStatement();
+                String getUserXP = "SELECT XPAmount FROM levels_" + guild.getStringID() + " WHERE UserID=" + user.getStringID() + ";";
+                ResultSet userXPSet = createStmt.executeQuery(getUserXP);
 
-            return addNewUserToDB(userXPSet, user, guild, createStmt, getUserXP);
+                return addNewUserToDB(userXPSet, user, guild, createStmt, getUserXP);
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+                return -1;
+            }
         }
-        catch (SQLException e)
+        else
         {
-            e.printStackTrace();
-            return -1;
+            return 0.0;
         }
     }
 
     static int getCurrentLevel(IUser user, IGuild guild)
     {
-        try
+        //TODO better handle if users have left the server.
+        if(user != null)
         {
-            Statement createStmt = levelConn.createStatement();
-            String getUserLevel = "SELECT Level FROM levels_" + guild.getStringID() + " WHERE UserID=" + user.getStringID() + ";";
-            ResultSet userLevelSet = createStmt.executeQuery(getUserLevel);
+            try
+            {
+                Statement createStmt = levelConn.createStatement();
+                String getUserLevel = "SELECT Level FROM levels_" + guild.getStringID() + " WHERE UserID=" + user.getStringID() + ";";
+                ResultSet userLevelSet = createStmt.executeQuery(getUserLevel);
 
-            //Down-cast double to return as an int
-            //E.g. 6.9 returns 6;
-            return (int) addNewUserToDB(userLevelSet, user, guild, createStmt, getUserLevel);
+                //Down-cast double to return as an int
+                //E.g. 6.9 returns 6;
+                return (int) addNewUserToDB(userLevelSet, user, guild, createStmt, getUserLevel);
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+                return -1;
+            }
         }
-        catch (SQLException e)
+        else
         {
-            e.printStackTrace();
-            return -1;
+            return 1;
         }
     }
 
@@ -675,40 +699,52 @@ public class LevelUtils
             InputStream is;
             URL avatarURL;
             URLConnection connection;
+            String fileEnding = "png"; //Defaults to .png
 
             //Split URL and file ending
-            String[] splitURL = user.getAvatarURL().split("\\.");
-            StringBuilder combinedURL = new StringBuilder();
-            String fileEnding = "";
-
-            for(int i = 0; i < splitURL.length; i++)
+            //TODO better handle if users have left the server.
+            if(user != null)
             {
-                //If this isn't the last period in the URL, combine it all together.
-                if(i == splitURL.length - 1)
+                String[] splitURL = user.getAvatarURL().split("\\.");
+                StringBuilder combinedURL = new StringBuilder();
+
+                for(int i = 0; i < splitURL.length; i++)
                 {
-                    //This is the last period of the URL, so these characters are the file ending of the given URL
-                    fileEnding = splitURL[i];
+                    //If this isn't the last period in the URL, combine it all together.
+                    if(i == splitURL.length - 1)
+                    {
+                        //This is the last period of the URL, so these characters are the file ending of the given URL
+                        fileEnding = splitURL[i];
+                    }
+                    else
+                    {
+                        combinedURL.append(splitURL[i]);
+                        combinedURL.append(".");
+                    }
+                }
+
+                //Now we have split up the URL and acquired the file type, assess if it is a GIF avatar or not and re-add it to the filepath.
+                if(!fileEnding.equals("gif"))
+                {
+                    combinedURL.append("png");
+                    fileEnding = "png"; //Change file ending to png (so it's synchronous with what's set in the URL!)
                 }
                 else
                 {
-                    combinedURL.append(splitURL[i]);
-                    combinedURL.append(".");
+                    //TODO add gif profile pictures back if wanted
+                    //combinedURL.append(fileEnding);
+                    combinedURL.append("png");
+                    fileEnding = "png"; //Change file ending to png (so it's synchronous with what's set in the URL!)
                 }
-            }
 
-            //Now we have split up the URL and acquired the file type, assess if it is a GIF avatar or not and re-add it to the filepath.
-            if(!fileEnding.equals("gif"))
-            {
-                combinedURL.append("png");
-                fileEnding = "png"; //Change file ending to png (so it's synchronous with what's set in the URL!)
+                //Create URL object and add size query to it as well
+                avatarURL = new URL(combinedURL.toString() + "?size=256");
             }
             else
             {
-                combinedURL.append(fileEnding);
+                //Use a default avatar if the user has left the server.
+                avatarURL = new URL("https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png?size=256");
             }
-
-            //Create URL object and add size query to it as well
-            avatarURL = new URL(combinedURL.toString() + "?size=256");
 
             // 403 error avoided :sunglasses:
             connection = avatarURL.openConnection();
@@ -814,7 +850,17 @@ public class LevelUtils
         Color textColor = new Color(240, 240, 240);
         Color secondTextColor = new Color(110, 110, 110);
         Color thirdTextColor = new Color(0.2f, 0.2f, 0.2f, 0.4f);
-        Color highlightColor = new Color(user.getColorForGuild(guild).getRed(), user.getColorForGuild(guild).getGreen(), user.getColorForGuild(guild).getBlue());
+        Color highlightColor;
+        //TODO better handle users that have left the server.
+        if (user != null)
+        {
+            highlightColor = new Color(user.getColorForGuild(guild).getRed(), user.getColorForGuild(guild).getGreen(), user.getColorForGuild(guild).getBlue());
+        }
+        else
+        {
+            highlightColor = new Color(255, 255, 255);
+        }
+
 
         if (highlightColor.equals(Color.BLACK)) {
             highlightColor = textColor;
@@ -885,7 +931,17 @@ public class LevelUtils
 
         // Username
         rankGraphic.setColor(textColor);
-        String username = user.getName();
+        //TODO better handle users that have left the server.
+        String username;
+        if (user != null)
+        {
+            username = user.getName();
+        }
+        else
+        {
+            username = "Departed User";
+        }
+
         int fontSize = 70;
         boolean shortenName = false;
         while(310 + rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, 35)).stringWidth("#0000") + rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) > xXP)
@@ -914,7 +970,16 @@ public class LevelUtils
         // Discriminator
         rankGraphic.setColor(textColor);
         rankGraphic.setFont(new Font(fontName, Font.PLAIN, 35));
-        rankGraphic.drawString("#" + user.getDiscriminator(), rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) + 310, 180);
+        //TODO better handle users that have left the server.
+        if (user != null)
+        {
+            rankGraphic.drawString("#" + user.getDiscriminator(), rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) + 310, 180);
+        }
+        else
+        {
+            rankGraphic.drawString("#0000", rankGraphic.getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).stringWidth(username) + 310, 180);
+        }
+
 
         // Level
         int tempLevel = userLevel%100;
@@ -1242,7 +1307,7 @@ public class LevelUtils
         double totalMultiplier = 1.0;
         for(IRole role: multiplierRoles)
         {
-            totalMultiplier += getMultiplierForRole(guild, role);
+            totalMultiplier += getMultiplierForRole(guild, role) - 1.0;
         }
 
         //Append the total multiplier of the current user.

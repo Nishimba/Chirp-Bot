@@ -234,16 +234,21 @@ public class LevelCommands
                         {
                             i++;
                         }
+
                         top25Users.beforeFirst(); //Put the pointer of the set to before the first index
 
                         //Add all users in the top25 to the ArrayList.
                         for(int j = 0; j < i; j++)
                         {
-                            possibleUsers.add(top25Users.getLong(j));
+                            if(top25Users.next())
+                            {
+                                possibleUsers.add(top25Users.getLong(1));
+                            }
                         }
 
                         //If the user is in the voice chat, add them to the list of entrants too
                         IVoiceChannel currentVC = event.getAuthor().getVoiceStateForGuild(event.getGuild()).getChannel();
+
                         if(currentVC != null)
                         {
                             //Return list of IUsers of all users connected to channel
