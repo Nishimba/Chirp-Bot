@@ -27,52 +27,53 @@ public class VODCommands
             @Override
             public void Execute(MessageCreateEvent event, String[] args)
             {
-                Consumer<EmbedCreateSpec> template = spec ->
+                //If just "~help" is given, the bot will return all commands it knows in the HashMap.
+                if(args.length == 1)
                 {
-                    spec.setAuthor("Chirp Help", null, null);
-                    spec.setTitle("I'll try my best! Here's what I know.");
+                    //alphabetise help
+                    Map<String, Command> map = new TreeMap<>(commandMap);
 
-                    //If just "~help" is given, the bot will return all commands it knows in the HashMap.
-                    if(args.length == 1)
+                    //if admin, put the admin commands in the help command
+                    for (Map.Entry<String, Command> command : map.entrySet())
                     {
-                        //alphabetise help
-                        Map<String, Command> map = new TreeMap<>(commandMap);
-
-                        //if admin, put the admin commands in the help command
-                        for (Map.Entry<String, Command> command : map.entrySet())
+                        if (command.getValue().isAdmin && event.getMember().get().asMember(event.getGuildId().get()).block().getBasePermissions().block().contains(Permission.ADMINISTRATOR))
                         {
-                            if (command.getValue().isAdmin && event.getMember().get().asMember(event.getGuildId().get()).block().getBasePermissions().block().contains(Permission.ADMINISTRATOR))
-                            {
-                                spec.addField(command.getValue().commandName, command.getValue().description, false);
-                            }
-                            else if (!command.getValue().isAdmin)
-                            {
-                                spec.addField(command.getValue().commandName, command.getValue().description, false);
-                            }
+                            spec.addField(command.getValue().commandName, command.getValue().description, false);
+                        }
+                        else if (!command.getValue().isAdmin)
+                        {
+                            spec.addField(command.getValue().commandName, command.getValue().description, false);
                         }
                     }
-                    //Otherwise, the bot will return the usage, title and description of the command given in the first argument after the help command itself.
-                    else if(args.length == 2)
+                }
+                //Otherwise, the bot will return the usage, title and description of the command given in the first argument after the help command itself.
+                else if(args.length == 2)
+                {
+                    //if the command map has the command
+                    if (commandMap.containsKey(args[1]))
                     {
-                        //if the command map has the command
-                        if (commandMap.containsKey(args[1]))
-                        {
-                            //append to the embed the name of the command and the description
-                            spec.addField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
+                        //append to the embed the name of the command and the description
+                        spec.addField(commandMap.get(args[1]).commandName, commandMap.get(args[1]).description, false);
 
-                            //if the usages are not null, write them to the embed
-                            if(commandMap.get(args[1]).usages != null)
-                            {
-                                spec.addField("This is how you can use " + (commandMap.get(args[1]).commandName) + ":", BotUtils.OutputUsage(commandMap.get(args[1])), false);
-                            }
-                        }
-                        else
+                        //if the usages are not null, write them to the embed
+                        if(commandMap.get(args[1]).usages != null)
                         {
-                            event.getMessage().getChannel().flatMap(reply -> reply.createMessage("Sorry, but I don't know the command " + args[1] + "."));
+                            spec.addField("This is how you can use " + (commandMap.get(args[1]).commandName) + ":", BotUtils.OutputUsage(commandMap.get(args[1])), false);
                         }
                     }
-                };
-                event.getMessage().getChannel().flatMap(reply -> reply.createEmbed(template.andThen(embedSpec -> {})));
+                    else
+                    {
+                        event.getMessage().getChannel().flatMap(reply -> reply.createMessage("Sorry, but I don't know the command " + args[1] + ".")).block();
+                    }
+                }
+                Consumer<EmbedCreateSpec> template = embedCreateSpec ->
+                {
+                    embedCreateSpec.setAuthor("Chirp Help", null, null);
+                    embedCreateSpec.setTitle("I'll try my best! Here's what I know.");
+
+                }
+
+                event.getMessage().getChannel().flatMap(reply -> reply.createMessage(messageCreateSpec -> messageCreateSpec.set));
             }
         };
 

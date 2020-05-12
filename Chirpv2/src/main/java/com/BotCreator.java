@@ -18,8 +18,7 @@ public class BotCreator
         logger = log;
         try
         {
-            DiscordClient cli = new DiscordClientBuilder(Objects.requireNonNull(BotUtils.ReadLines("res/BotToken.txt")).get(0)).setInitialPresence(Presence.online(Activity.playing("Type ~help for help!"))).build();
-            return cli;
+            return new DiscordClientBuilder(Objects.requireNonNull(BotUtils.ReadLines("res/BotToken.txt")).get(0)).setInitialPresence(Presence.online(Activity.playing("Type ~help for help!"))).build();
         }
         catch (NullPointerException e)
         {

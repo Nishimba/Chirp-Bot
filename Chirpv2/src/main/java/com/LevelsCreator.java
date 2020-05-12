@@ -1,22 +1,12 @@
 package com;
 
 import discord4j.core.DiscordClient;
-import discord4j.core.object.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-
 public class LevelsCreator
 {
-    public static final double MIN_XP_PER_MESSAGE = 15.0;
-    public static final double MAX_XP_PER_MESSAGE = 25.0;
-
     private double[] levelBarriers = new double[502];
-
-    private Map<User, Instant> lastMsg = new HashMap<>();
 
     Logger logger;
 
