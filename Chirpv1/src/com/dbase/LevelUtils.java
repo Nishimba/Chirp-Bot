@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
@@ -470,6 +471,11 @@ public class LevelUtils
         return getCurrentXP(user, guild) - lowerXP;
     }
 
+    private static double totalXP(IUser user, IGuild guild)
+    {
+        return getCurrentXP(user, guild);
+    }
+
     private static boolean checkCooldown(MessageReceivedEvent event)
     {
         Instant eventInstant = event.getMessage().getTimestamp();
@@ -882,6 +888,10 @@ public class LevelUtils
         }
         int xXP = 930 - rankGraphic.getFontMetrics().stringWidth(xpString);
         rankGraphic.drawString(xpString, xXP, 180);
+
+        DecimalFormat formatter = new DecimalFormat("#,###.00");
+
+        rankGraphic.drawString("Total XP: " + formatter.format(totalXP(user, guild)), 300, 280);
 
         // Username
         rankGraphic.setColor(textColor);
